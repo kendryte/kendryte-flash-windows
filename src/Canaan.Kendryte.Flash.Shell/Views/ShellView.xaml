@@ -1,0 +1,17 @@
+<metro:MetroWindow x:Class="Canaan.Kendryte.Flash.Shell.Views.ShellView"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+                   xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                   xmlns:cal="http://www.caliburnproject.org"
+                   WindowStartupLocation="CenterScreen"
+                   EnableDWMDropShadow="True"
+                   ResizeMode="CanMinimize" Width="299.442" Height="377.721"
+                   SizeToContent="Height"
+                   Title="K-Flash V0.1.0">
+    <materialDesign:DialogHost>
+        <Grid>
+            <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}" Margin="10"/>
+        </Grid>
+    </materialDesign:DialogHost>
+</metro:MetroWindow>

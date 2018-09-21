@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="Canaan.Kendryte.Flash.Shell.Views.FlashView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:Canaan.Kendryte.Flash.Shell.Views"
+             xmlns:cal="http://www.caliburnproject.org"
+             mc:Ignorable="d" 
+             d:DesignHeight="438.412" d:DesignWidth="296.888">
+    <UserControl.Resources>
+        <Style x:Key="FieldHeaderTextBlock" TargetType="TextBlock"
+               BasedOn="{StaticResource MaterialDesignSubheadingTextBlock}">
+        </Style>
+        <Style x:Key="FieldHeaderCheckbox" TargetType="CheckBox"
+               BasedOn="{StaticResource MaterialDesignCheckBox}">
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Device</TextBlock>
+            <ComboBox materialDesign:HintAssist.Hint="Device" ItemsSource="{Binding Devices}" SelectedValue="{Binding Device}"
+                      DisplayMemberPath="Name" SelectedValuePath="Port"/>
+            <Grid Margin="0 10 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0 0 5 0">
+                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Baud rate</TextBlock>
+                    <ComboBox materialDesign:HintAssist.Hint="Baud rate" IsEditable="False" IsReadOnly="True" ItemsSource="{Binding BaudRates}" Text="{Binding BaudRate, Mode=TwoWay}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="5 0 0 0">
+                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Chip</TextBlock>
+                    <ComboBox materialDesign:HintAssist.Hint="Chip" ItemsSource="{Binding Chips}"
+                              DisplayMemberPath="Key" SelectedValuePath="Value"
+                              SelectedValue="{Binding Chip, Mode=TwoWay}"/>
+                </StackPanel>
+            </Grid>
+            <TextBlock Margin="0 10 0 0" Style="{StaticResource FieldHeaderTextBlock}">Firmware</TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox materialDesign:HintAssist.Hint="Firmware" Text="{Binding Firmware, Mode=TwoWay}"/>
+                <Button cal:Message.Attach="BrowseFirmware" Grid.Column="1"
+                        Style="{StaticResource MaterialDesignFlatButton}">...</Button>
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button cal:Message.Attach="StartFlash" Margin="0 10 10 0"
+                    IsEnabled="{Binding CanStartFlash}"
+                    materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsFlashing}"
+                    materialDesign:ButtonProgressAssist.Value="-1"
+                    materialDesign:ButtonProgressAssist.IsIndeterminate="True">Flash</Button>
+                <Button Grid.Column="1" Margin="0 10 0 0"
+                    Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
+                    <materialDesign:PackIcon Kind="InformationVariant" />
+                    <Button.CommandParameter>
+                        <StackPanel Margin="16">
+                            <TextBlock>
+                                <Run>K-Flash V0.1.0</Run><LineBreak/><LineBreak/>
+                                <Run>Copyright 2018 Canaan Inc.</Run>
+                                <Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate">https://kendryte.com</Hyperlink><LineBreak/>
+                                <Run>Note: Baud rate and chip selection will be available in next release.</Run>
+                            </TextBlock>
+                            <TextBlock Margin="0 5 0 0">License: </TextBlock>
+                            <TextBox IsReadOnly="True" VerticalScrollBarVisibility="Visible"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     Text="{Binding License}" MaxLines="6" />
+                            <Button Style="{StaticResource MaterialDesignFlatButton}" Margin="0 10 0 0"
+                                    IsCancel="True"
+                                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                    HorizontalAlignment="Center">
+                                OK
+                            </Button>
+                        </StackPanel>
+                    </Button.CommandParameter>
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>
