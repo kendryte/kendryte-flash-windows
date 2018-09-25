@@ -68,7 +68,7 @@
                     <Button.CommandParameter>
                         <StackPanel Margin="16">
                             <TextBlock>
-                                <Run>K-Flash V0.1.0</Run><LineBreak/><LineBreak/>
+                                <Run>K-Flash V0.1.1</Run><LineBreak/><LineBreak/>
                                 <Run>Copyright 2018 Canaan Inc.</Run>
                                 <Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate">https://kendryte.com</Hyperlink><LineBreak/>
                                 <Run>Note: Baud rate and chip selection will be available in next release.</Run>

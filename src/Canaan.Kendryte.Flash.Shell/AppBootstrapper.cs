@@ -23,7 +23,8 @@ namespace Canaan.Kendryte.Flash.Shell
 {
     public class AppBootstrapper : BootstrapperBase
     {
-        SimpleContainer _container;
+        private SimpleContainer _container;
+        private bool _started = false;
 
         public AppBootstrapper()
         {
@@ -57,17 +58,19 @@ namespace Canaan.Kendryte.Flash.Shell
         protected override void OnStartup(object sender, System.Windows.StartupEventArgs e)
         {
             DisplayRootViewFor<IShell>();
+            _started = true;
         }
 
         protected override void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-
             var except = e.Exception;
             while (except is TargetInvocationException && except.InnerException != null)
                 except = except.InnerException;
 
             MessageBox.Show(except.Message, "K-Flash", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (!_started)
+                Application.Shutdown();
         }
     }
 }

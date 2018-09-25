@@ -39,6 +39,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
 
     public class FlashViewModel : PropertyChangedBase
     {
+        private static readonly Version _osVersionSupportsPnP = new Version(6, 2);
+
         public BindableCollection<SerialDevice> Devices { get; } = new BindableCollection<SerialDevice>();
 
         public Dictionary<string, uint> Chips { get; } = new Dictionary<string, uint>
@@ -85,14 +87,14 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             get => _isFlashing;
             set
             {
-                if(Set(ref _isFlashing,value))
+                if (Set(ref _isFlashing, value))
                 {
-                    NotifyOfPropertyChange(nameof(CanFlash));
+                    NotifyOfPropertyChange(nameof(CanStartFlash));
                 }
             }
         }
 
-        public bool CanFlash => !IsFlashing;
+        public bool CanStartFlash => !IsFlashing;
 
         private string _license;
         public string License
@@ -112,7 +114,18 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
 
         private void UpdateDevices()
         {
-            var query = new SelectQuery("Win32_PnPEntity", "PNPClass='Ports'", new[] { "Caption" });
+            SelectQuery query;
+
+            // Workaround for Win 7 that doesn't has 'PNPClass' property
+            if (Environment.OSVersion.Version < _osVersionSupportsPnP)
+            {
+                query = new SelectQuery("Win32_PnPEntity", "Caption like '%(COM%)'", new[] { "Caption" });
+            }
+            else
+            {
+                query = new SelectQuery("Win32_PnPEntity", "PNPClass='Ports'", new[] { "Caption" });
+            }
+
             var searcher = new ManagementObjectSearcher(query);
 
             Devices.Clear();
@@ -157,6 +170,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                     }
                 });
 
+                IsFlashing = false;
                 MessageBox.Show("Flash completed!", "K-Flash", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally
