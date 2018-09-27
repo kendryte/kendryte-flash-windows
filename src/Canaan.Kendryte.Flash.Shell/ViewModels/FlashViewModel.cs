@@ -161,12 +161,14 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
 
                     using (var loader = new Loader(Device, BaudRate))
                     {
+                        loader.BootToISPMode();
                         loader.Greeting();
                         loader.InstallFlashBootloader(Resources.ISP_PROG);
                         loader.Boot();
                         loader.FlashGreeting();
                         loader.InitializeFlash(Chip);
                         loader.FlashFirmware(firmware);
+                        loader.Reboot();
                     }
                 });
 
@@ -217,6 +219,14 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 };
 
                 _port.Open();
+            }
+
+            public void BootToISPMode()
+            {
+                _port.DtrEnable = true;
+                _port.RtsEnable = true;
+                Thread.Sleep(TimeSpan.FromMilliseconds(50));
+                _port.DtrEnable = false;
             }
 
             public void Greeting()
@@ -342,6 +352,14 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
 
                     address += dataframeSize;
                 }
+            }
+
+            public void Reboot()
+            {
+                _port.RtsEnable = false;
+                _port.DtrEnable = true;
+                Thread.Sleep(TimeSpan.FromMilliseconds(50));
+                _port.DtrEnable = false;
             }
 
             private void FlashDataFrame(byte[] data, uint address)
