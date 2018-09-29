@@ -227,6 +227,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 _port.RtsEnable = true;
                 Thread.Sleep(TimeSpan.FromMilliseconds(50));
                 _port.DtrEnable = false;
+                Thread.Sleep(TimeSpan.FromMilliseconds(50));
             }
 
             public void Greeting()
