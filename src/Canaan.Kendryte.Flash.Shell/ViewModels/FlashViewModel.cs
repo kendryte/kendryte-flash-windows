@@ -41,7 +41,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
 
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
         {
-            115200
+            115200,
+            1500000
         };
 
         private JobItemType? _currentJob;
@@ -111,7 +112,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public FlashViewModel()
         {
             Chip = Chips.First().Value;
-            BaudRate = BaudRates[0];
+            BaudRate = BaudRates.Last();
             License = Resources.LICENSE;
 
             Device = Devices.FirstOrDefault()?.Port;
@@ -142,6 +143,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                     await loader.InstallFlashBootloader(Resources.ISP_PROG);
                     await loader.BootBootloader();
                     await loader.FlashGreeting();
+                    await loader.ChangeBaudRate();
                     await loader.InitializeFlash(Chip);
                     await loader.FlashFirmware(firmware);
                     await loader.Reboot();

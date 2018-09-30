@@ -32,6 +32,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         Greeting,
         InstallFlashBootloader,
         FlashGreeting,
+        ChangeBaudRate,
         InitializeFlash,
         FlashFirmware,
         Reboot
@@ -76,6 +77,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         };
 
         private readonly SerialPort _port;
+        private readonly int _baudRate;
 
         public Dictionary<JobItemType, JobItemStatus> JobItemsStatus { get; }
 
@@ -94,6 +96,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
         public KendryteLoader(string device, int baudRate)
         {
+            _baudRate = baudRate;
             JobItemsStatus = (from e in (JobItemType[])Enum.GetValues(typeof(JobItemType))
                               select new
                               {
@@ -101,7 +104,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                                   Value = new JobItemStatus()
                               }).ToDictionary(o => o.Key, o => o.Value);
 
-            _port = new SerialPort(device, baudRate, Parity.None, 8, StopBits.One)
+            _port = new SerialPort(device, 115200, Parity.None, 8, StopBits.One)
             {
                 ReadTimeout = 2000
             };
@@ -194,6 +197,40 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                     var resp = FlashModeResponse.Parse(ReceiveOnReturn());
                     if (resp.errorCode != FlashModeResponse.ErrorCode.ISP_RET_OK)
                         throw new InvalidOperationException("Error in flash greeting.");
+                });
+            });
+        }
+
+        public async Task ChangeBaudRate()
+        {
+            var status = JobItemsStatus[JobItemType.ChangeBaudRate];
+            CurrentJob = JobItemType.ChangeBaudRate;
+            await DoJob(status, () =>
+            {
+                return Task.Run(async () =>
+                {
+                    var buffer = new byte[4 * 5];
+                    using (var stream = new MemoryStream(buffer))
+                    using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+                    {
+                        bw.Write((ushort)FlashModeResponse.Operation.ISP_UARTHS_BAUDRATE_SET);
+                        bw.Write((ushort)0x00);
+                        bw.Write((uint)0);  // checksum
+                        bw.Write(0);
+                        bw.Write(4);
+                        bw.Write(_baudRate);
+
+                        bw.Flush();
+                        var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
+                        bw.Seek(4, SeekOrigin.Begin);
+                        bw.Write(checksum);
+                    }
+
+                    Write(buffer);
+                    _port.Close();
+                    await Task.Delay(50);
+                    _port.BaudRate = _baudRate;
+                    _port.Open();
                 });
             });
         }
