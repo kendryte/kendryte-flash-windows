@@ -126,6 +126,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Services\FlashModeResponse.cs" />
+    <Compile Include="Services\ISPResponse.cs" />
+    <Compile Include="Services\KendryteLoader.cs" />
+    <Compile Include="Services\SerialPortEnumerator.cs" />
     <Compile Include="ViewModels\FlashViewModel.cs" />
     <Compile Include="ViewModels\IShell.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
@@ -136,6 +140,10 @@
     <Compile Include="Views\FlashView.xaml.cs">
       <DependentUpon>FlashView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Assets\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FlashView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -172,9 +180,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\LICENSE.txt" />

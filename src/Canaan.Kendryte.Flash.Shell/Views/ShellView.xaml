@@ -8,10 +8,10 @@
                    EnableDWMDropShadow="True"
                    ResizeMode="CanMinimize" Width="299.442" Height="377.721"
                    SizeToContent="Height"
-                   Title="K-Flash V0.1.0">
+                   Title="K-Flash V0.2.0">
     <materialDesign:DialogHost>
         <Grid>
-            <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}" Margin="10"/>
+            <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}"/>
         </Grid>
     </materialDesign:DialogHost>
 </metro:MetroWindow>

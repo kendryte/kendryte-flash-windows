@@ -9,21 +9,26 @@
              mc:Ignorable="d" 
              d:DesignHeight="438.412" d:DesignWidth="296.888">
     <UserControl.Resources>
-        <Style x:Key="FieldHeaderTextBlock" TargetType="TextBlock"
-               BasedOn="{StaticResource MaterialDesignSubheadingTextBlock}">
-        </Style>
-        <Style x:Key="FieldHeaderCheckbox" TargetType="CheckBox"
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Assets/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="FieldHeaderTextBlock" TargetType="{x:Type TextBlock}"
+               BasedOn="{StaticResource MaterialDesignSubheadingTextBlock}"/>
+            <Style x:Key="FieldHeaderCheckbox" TargetType="{x:Type CheckBox}"
                BasedOn="{StaticResource MaterialDesignCheckBox}">
-            <Setter Property="FontSize" Value="15"/>
-        </Style>
+                <Setter Property="FontSize" Value="15"/>
+            </Style>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel>
-            <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Device</TextBlock>
+        <StackPanel Margin="10">
+            <TextBlock Style="{StaticResource FieldHeaderTextBlock}"><Run Text="Device"/></TextBlock>
             <ComboBox materialDesign:HintAssist.Hint="Device" ItemsSource="{Binding Devices}" SelectedValue="{Binding Device}"
                       DisplayMemberPath="Name" SelectedValuePath="Port"/>
             <Grid Margin="0 10 0 0">
@@ -32,17 +37,17 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0 0 5 0">
-                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Baud rate</TextBlock>
+                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}"><Run Text="Baud rate"/></TextBlock>
                     <ComboBox materialDesign:HintAssist.Hint="Baud rate" IsEditable="False" IsReadOnly="True" ItemsSource="{Binding BaudRates}" Text="{Binding BaudRate, Mode=TwoWay}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="5 0 0 0">
-                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}">Chip</TextBlock>
+                    <TextBlock Style="{StaticResource FieldHeaderTextBlock}"><Run Text="Chip"/></TextBlock>
                     <ComboBox materialDesign:HintAssist.Hint="Chip" ItemsSource="{Binding Chips}"
                               DisplayMemberPath="Key" SelectedValuePath="Value"
                               SelectedValue="{Binding Chip, Mode=TwoWay}"/>
                 </StackPanel>
             </Grid>
-            <TextBlock Margin="0 10 0 0" Style="{StaticResource FieldHeaderTextBlock}">Firmware</TextBlock>
+            <TextBlock Margin="0 10 0 0" Style="{StaticResource FieldHeaderTextBlock}"><Run Text="Firmware"/></TextBlock>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -50,7 +55,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBox materialDesign:HintAssist.Hint="Firmware" Text="{Binding Firmware, Mode=TwoWay}"/>
                 <Button cal:Message.Attach="BrowseFirmware" Grid.Column="1"
-                        Style="{StaticResource MaterialDesignFlatButton}">...</Button>
+                        Style="{StaticResource MaterialDesignFlatButton}" Content="..."/>
             </Grid>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -61,32 +66,34 @@
                     IsEnabled="{Binding CanStartFlash}"
                     materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsFlashing}"
                     materialDesign:ButtonProgressAssist.Value="-1"
-                    materialDesign:ButtonProgressAssist.IsIndeterminate="True">Flash</Button>
+                    materialDesign:ButtonProgressAssist.IsIndeterminate="True" Content="Flash"/>
                 <Button Grid.Column="1" Margin="0 10 0 0"
                     Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
-                    <materialDesign:PackIcon Kind="InformationVariant" />
                     <Button.CommandParameter>
                         <StackPanel Margin="16">
-                            <TextBlock>
-                                <Run>K-Flash V0.1.1</Run><LineBreak/><LineBreak/>
-                                <Run>Copyright 2018 Canaan Inc.</Run>
-                                <Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate">https://kendryte.com</Hyperlink><LineBreak/>
-                                <Run>Note: Baud rate and chip selection will be available in next release.</Run>
-                            </TextBlock>
-                            <TextBlock Margin="0 5 0 0">License: </TextBlock>
+                            <TextBlock><Run Text="K-Flash V0.2.0"/><LineBreak/><LineBreak/><Run Text="Copyright 2018 Canaan Inc."/><Run Text=" "/><Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="https://kendryte.com"/></Hyperlink><LineBreak/><Run Text="Note: Baud rate and chip selection will be available in next release."/></TextBlock>
+                            <TextBlock Margin="0 5 0 0"><Run Text="License:"/></TextBlock>
                             <TextBox IsReadOnly="True" VerticalScrollBarVisibility="Visible"
                                      HorizontalScrollBarVisibility="Auto"
                                      Text="{Binding License}" MaxLines="6" />
                             <Button Style="{StaticResource MaterialDesignFlatButton}" Margin="0 10 0 0"
                                     IsCancel="True"
                                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                                    HorizontalAlignment="Center">
-                                OK
-                            </Button>
+                                    HorizontalAlignment="Center" Content="OK"/>
                         </StackPanel>
                     </Button.CommandParameter>
+                    <materialDesign:PackIcon Kind="InformationVariant" />
                 </Button>
             </Grid>
         </StackPanel>
+        <StatusBar Grid.Row="1" Background="#EFEFEF">
+            <StatusBarItem>
+                <TextBlock Foreground="Black" Text="{Binding CurrentJob}"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <ProgressBar Width="150" Visibility="{Binding IsFlashing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             Value="{Binding CurrentJobStatus.Progress}" Height="8" Minimum="0" Maximum="1"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </UserControl>

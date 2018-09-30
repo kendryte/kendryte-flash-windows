@@ -28,6 +28,8 @@ namespace Canaan.Kendryte.Flash.Shell
 
         public AppBootstrapper()
         {
+            var t = typeof(int).TypeHandle.Value;
+
             Initialize();
         }
 
