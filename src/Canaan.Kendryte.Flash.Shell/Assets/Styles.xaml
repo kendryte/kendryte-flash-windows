@@ -1,0 +1,660 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:Converters="clr-namespace:MaterialDesignThemes.Wpf.Converters;assembly=MaterialDesignThemes.Wpf">
+    <Style x:Key="StatusExpanderStyle" TargetType="{x:Type Expander}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+        <Setter Property="Foreground" Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type FrameworkElement}}}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Expander}">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ExpansionStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" To="Expanded">
+                                        <VisualTransition.GeneratedEasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </VisualTransition.GeneratedEasingFunction>
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Storyboard.TargetName="PART_Content">
+                                                <DiscreteObjectKeyFrame KeyTime="0">
+                                                    <DiscreteObjectKeyFrame.Value>
+                                                        <Visibility>Visible</Visibility>
+                                                    </DiscreteObjectKeyFrame.Value>
+                                                </DiscreteObjectKeyFrame>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimation Duration="0:0:0.3" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_Content"/>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" To="Collapsed">
+                                        <VisualTransition.GeneratedEasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </VisualTransition.GeneratedEasingFunction>
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Storyboard.TargetName="PART_Content">
+                                                <DiscreteObjectKeyFrame KeyTime="0:0:0.3">
+                                                    <DiscreteObjectKeyFrame.Value>
+                                                        <Visibility>Collapsed</Visibility>
+                                                    </DiscreteObjectKeyFrame.Value>
+                                                </DiscreteObjectKeyFrame>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimation Duration="0:0:0.3" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_Content"/>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="Expanded">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_Content"/>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Storyboard.TargetName="PART_Content">
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Visible</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Collapsed">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PART_Content"/>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Storyboard.TargetName="PART_Content">
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Hidden</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <DockPanel Background="{TemplateBinding Background}">
+                            <ToggleButton x:Name="HeaderSite" BorderThickness="0" Cursor="Hand" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" Focusable="False" FontSize="15" IsTabStop="False" IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Opacity="0.87">
+                                <ToggleButton.Style>
+                                    <Style TargetType="{x:Type ToggleButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="{TemplateBinding Background}" Padding="0,12">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                                            <ToggleButton Grid.Column="1" Foreground="{TemplateBinding Foreground}" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center">
+                                                                <ToggleButton.Style>
+                                                                    <Style TargetType="{x:Type ToggleButton}">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                                                    <Border Background="Transparent">
+                                                                                        <VisualStateManager.VisualStateGroups>
+                                                                                            <VisualStateGroup x:Name="CheckStates">
+                                                                                                <VisualStateGroup.Transitions>
+                                                                                                    <VisualTransition From="Unchecked" GeneratedDuration="0" To="Checked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Unchecked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Checked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="Checked" GeneratedDuration="0" To="Unchecked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                </VisualStateGroup.Transitions>
+                                                                                                <VisualState x:Name="Checked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                                <VisualState x:Name="Unchecked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                            </VisualStateGroup>
+                                                                                        </VisualStateManager.VisualStateGroups>
+                                                                                        <materialDesign:PackIcon x:Name="ExpandPath" Foreground="{TemplateBinding Foreground}" Height="24" Kind="ChevronDown" Opacity="0.38" RenderTransformOrigin="0.5,0.5" Width="24">
+                                                                                            <materialDesign:PackIcon.RenderTransform>
+                                                                                                <TransformGroup>
+                                                                                                    <ScaleTransform/>
+                                                                                                    <SkewTransform/>
+                                                                                                    <RotateTransform/>
+                                                                                                    <TranslateTransform/>
+                                                                                                </TransformGroup>
+                                                                                            </materialDesign:PackIcon.RenderTransform>
+                                                                                        </materialDesign:PackIcon>
+                                                                                    </Border>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ToggleButton.Style>
+                                                            </ToggleButton>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                            <Border x:Name="ContentSite" DockPanel.Dock="Bottom">
+                                <StackPanel x:Name="ContentPanel" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                    <StackPanel.Height>
+                                        <MultiBinding UpdateSourceTrigger="Default">
+                                            <MultiBinding.Converter>
+                                                <Converters:MathMultipleConverter Operation="Multiply"/>
+                                            </MultiBinding.Converter>
+                                            <Binding ElementName="PART_Content" Path="ActualHeight"/>
+                                            <Binding ElementName="PART_Content" Path="Opacity"/>
+                                        </MultiBinding>
+                                    </StackPanel.Height>
+                                    <StackPanel.Width>
+                                        <MultiBinding UpdateSourceTrigger="Default">
+                                            <MultiBinding.Converter>
+                                                <Converters:MathMultipleConverter Operation="Multiply"/>
+                                            </MultiBinding.Converter>
+                                            <Binding ElementName="PART_Content" Path="ActualWidth"/>
+                                            <Binding ElementName="PART_Content" Path="Opacity"/>
+                                        </MultiBinding>
+                                    </StackPanel.Width>
+                                    <ContentPresenter x:Name="PART_Content" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False"/>
+                                </StackPanel>
+                            </Border>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ExpandDirection" Value="Right">
+                            <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Left"/>
+                            <Setter Property="DockPanel.Dock" TargetName="ContentSite" Value="Right"/>
+                            <Setter Property="Orientation" TargetName="ContentPanel" Value="Horizontal"/>
+                            <Setter Property="Height" TargetName="ContentPanel" Value="Auto"/>
+                            <Setter Property="Style" TargetName="HeaderSite">
+                                <Setter.Value>
+                                    <Style TargetType="{x:Type ToggleButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="{TemplateBinding Background}" Padding="12,24">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition/>
+                                                            </Grid.RowDefinitions>
+                                                            <ToggleButton Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="0" RenderTransformOrigin="0.5,0.5">
+                                                                <ToggleButton.RenderTransform>
+                                                                    <RotateTransform Angle="-90"/>
+                                                                </ToggleButton.RenderTransform>
+                                                                <ToggleButton.Style>
+                                                                    <Style TargetType="{x:Type ToggleButton}">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                                                    <Border Background="Transparent">
+                                                                                        <VisualStateManager.VisualStateGroups>
+                                                                                            <VisualStateGroup x:Name="CheckStates">
+                                                                                                <VisualStateGroup.Transitions>
+                                                                                                    <VisualTransition From="Unchecked" GeneratedDuration="0" To="Checked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Unchecked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Checked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="Checked" GeneratedDuration="0" To="Unchecked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                </VisualStateGroup.Transitions>
+                                                                                                <VisualState x:Name="Checked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                                <VisualState x:Name="Unchecked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                            </VisualStateGroup>
+                                                                                        </VisualStateManager.VisualStateGroups>
+                                                                                        <materialDesign:PackIcon x:Name="ExpandPath" Foreground="{TemplateBinding Foreground}" Height="24" Kind="ChevronDown" Opacity="0.38" RenderTransformOrigin="0.5,0.5" Width="24">
+                                                                                            <materialDesign:PackIcon.RenderTransform>
+                                                                                                <TransformGroup>
+                                                                                                    <ScaleTransform/>
+                                                                                                    <SkewTransform/>
+                                                                                                    <RotateTransform/>
+                                                                                                    <TranslateTransform/>
+                                                                                                </TransformGroup>
+                                                                                            </materialDesign:PackIcon.RenderTransform>
+                                                                                        </materialDesign:PackIcon>
+                                                                                    </Border>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ToggleButton.Style>
+                                                            </ToggleButton>
+                                                            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" Margin="0,16,0,0" Grid.Row="1" VerticalAlignment="Top"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="ExpandDirection" Value="Left">
+                            <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Right"/>
+                            <Setter Property="DockPanel.Dock" TargetName="ContentSite" Value="Left"/>
+                            <Setter Property="Orientation" TargetName="ContentPanel" Value="Horizontal"/>
+                            <Setter Property="Height" TargetName="ContentPanel" Value="Auto"/>
+                            <Setter Property="Style" TargetName="HeaderSite">
+                                <Setter.Value>
+                                    <Style TargetType="{x:Type ToggleButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="{TemplateBinding Background}" Padding="12,24">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition/>
+                                                            </Grid.RowDefinitions>
+                                                            <ToggleButton Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="0" RenderTransformOrigin="0.5,0.5">
+                                                                <ToggleButton.RenderTransform>
+                                                                    <RotateTransform Angle="90"/>
+                                                                </ToggleButton.RenderTransform>
+                                                                <ToggleButton.Style>
+                                                                    <Style TargetType="{x:Type ToggleButton}">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                                                    <Border Background="Transparent">
+                                                                                        <VisualStateManager.VisualStateGroups>
+                                                                                            <VisualStateGroup x:Name="CheckStates">
+                                                                                                <VisualStateGroup.Transitions>
+                                                                                                    <VisualTransition From="Unchecked" GeneratedDuration="0" To="Checked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Unchecked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Checked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="Checked" GeneratedDuration="0" To="Unchecked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                </VisualStateGroup.Transitions>
+                                                                                                <VisualState x:Name="Checked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                                <VisualState x:Name="Unchecked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                            </VisualStateGroup>
+                                                                                        </VisualStateManager.VisualStateGroups>
+                                                                                        <materialDesign:PackIcon x:Name="ExpandPath" Foreground="{TemplateBinding Foreground}" Height="24" Kind="ChevronDown" Opacity="0.38" RenderTransformOrigin="0.5,0.5" Width="24">
+                                                                                            <materialDesign:PackIcon.RenderTransform>
+                                                                                                <TransformGroup>
+                                                                                                    <ScaleTransform/>
+                                                                                                    <SkewTransform/>
+                                                                                                    <RotateTransform/>
+                                                                                                    <TranslateTransform/>
+                                                                                                </TransformGroup>
+                                                                                            </materialDesign:PackIcon.RenderTransform>
+                                                                                        </materialDesign:PackIcon>
+                                                                                    </Border>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ToggleButton.Style>
+                                                            </ToggleButton>
+                                                            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" Margin="0,16,0,0" Grid.Row="1" VerticalAlignment="Top"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="ExpandDirection" Value="Up">
+                            <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Bottom"/>
+                            <Setter Property="DockPanel.Dock" TargetName="ContentSite" Value="Top"/>
+                            <Setter Property="Orientation" TargetName="ContentPanel" Value="Vertical"/>
+                            <Setter Property="Width" TargetName="ContentPanel" Value="Auto"/>
+                            <Setter Property="Style" TargetName="HeaderSite">
+                                <Setter.Value>
+                                    <Style TargetType="{x:Type ToggleButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="{TemplateBinding Background}" Padding="24,12">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <ContentPresenter Content="{TemplateBinding Content}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                                            <ToggleButton Grid.Column="1" Foreground="{TemplateBinding Foreground}" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Center">
+                                                                <ToggleButton.RenderTransform>
+                                                                    <RotateTransform Angle="-180"/>
+                                                                </ToggleButton.RenderTransform>
+                                                                <ToggleButton.Style>
+                                                                    <Style TargetType="{x:Type ToggleButton}">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                                                    <Border Background="Transparent">
+                                                                                        <VisualStateManager.VisualStateGroups>
+                                                                                            <VisualStateGroup x:Name="CheckStates">
+                                                                                                <VisualStateGroup.Transitions>
+                                                                                                    <VisualTransition From="Unchecked" GeneratedDuration="0" To="Checked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Unchecked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Checked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="Checked" GeneratedDuration="0" To="Unchecked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                </VisualStateGroup.Transitions>
+                                                                                                <VisualState x:Name="Checked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                                <VisualState x:Name="Unchecked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                            </VisualStateGroup>
+                                                                                        </VisualStateManager.VisualStateGroups>
+                                                                                        <materialDesign:PackIcon x:Name="ExpandPath" Foreground="{TemplateBinding Foreground}" Height="24" Kind="ChevronDown" Opacity="0.38" RenderTransformOrigin="0.5,0.5" Width="24">
+                                                                                            <materialDesign:PackIcon.RenderTransform>
+                                                                                                <TransformGroup>
+                                                                                                    <ScaleTransform/>
+                                                                                                    <SkewTransform/>
+                                                                                                    <RotateTransform/>
+                                                                                                    <TranslateTransform/>
+                                                                                                </TransformGroup>
+                                                                                            </materialDesign:PackIcon.RenderTransform>
+                                                                                        </materialDesign:PackIcon>
+                                                                                    </Border>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ToggleButton.Style>
+                                                            </ToggleButton>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="ExpandDirection" Value="Down">
+                            <Setter Property="DockPanel.Dock" TargetName="HeaderSite" Value="Top"/>
+                            <Setter Property="DockPanel.Dock" TargetName="ContentSite" Value="Bottom"/>
+                            <Setter Property="Orientation" TargetName="ContentPanel" Value="Vertical"/>
+                            <Setter Property="Width" TargetName="ContentPanel" Value="Auto"/>
+                            <Setter Property="Style" TargetName="HeaderSite">
+                                <Setter.Value>
+                                    <Style TargetType="{x:Type ToggleButton}">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="{TemplateBinding Background}" Padding="0,12">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                                            <ToggleButton Grid.Column="1" Foreground="{TemplateBinding Foreground}" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center">
+                                                                <ToggleButton.Style>
+                                                                    <Style TargetType="{x:Type ToggleButton}">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                                                    <Border Background="Transparent">
+                                                                                        <VisualStateManager.VisualStateGroups>
+                                                                                            <VisualStateGroup x:Name="CheckStates">
+                                                                                                <VisualStateGroup.Transitions>
+                                                                                                    <VisualTransition From="Unchecked" GeneratedDuration="0" To="Checked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Unchecked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="{x:Null}" GeneratedDuration="0" GeneratedEasingFunction="{x:Null}" To="Checked">
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                    <VisualTransition From="Checked" GeneratedDuration="0" To="Unchecked">
+                                                                                                        <VisualTransition.GeneratedEasingFunction>
+                                                                                                            <QuarticEase EasingMode="EaseOut"/>
+                                                                                                        </VisualTransition.GeneratedEasingFunction>
+                                                                                                        <Storyboard>
+                                                                                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0" Value="-180"/>
+                                                                                                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                            </DoubleAnimationUsingKeyFrames>
+                                                                                                        </Storyboard>
+                                                                                                    </VisualTransition>
+                                                                                                </VisualStateGroup.Transitions>
+                                                                                                <VisualState x:Name="Checked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="-180"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                                <VisualState x:Name="Unchecked">
+                                                                                                    <Storyboard>
+                                                                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="ExpandPath">
+                                                                                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                                                                                        </DoubleAnimationUsingKeyFrames>
+                                                                                                    </Storyboard>
+                                                                                                </VisualState>
+                                                                                            </VisualStateGroup>
+                                                                                        </VisualStateManager.VisualStateGroups>
+                                                                                        <materialDesign:PackIcon x:Name="ExpandPath" Foreground="{TemplateBinding Foreground}" Height="24" Kind="ChevronDown" Opacity="0.38" RenderTransformOrigin="0.5,0.5" Width="24">
+                                                                                            <materialDesign:PackIcon.RenderTransform>
+                                                                                                <TransformGroup>
+                                                                                                    <ScaleTransform/>
+                                                                                                    <SkewTransform/>
+                                                                                                    <RotateTransform/>
+                                                                                                    <TranslateTransform/>
+                                                                                                </TransformGroup>
+                                                                                            </materialDesign:PackIcon.RenderTransform>
+                                                                                        </materialDesign:PackIcon>
+                                                                                    </Border>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ToggleButton.Style>
+                                                            </ToggleButton>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

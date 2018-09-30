@@ -11,7 +11,7 @@
                    Title="K-Flash V0.2.0">
     <materialDesign:DialogHost>
         <Grid>
-            <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}" Margin="10"/>
+            <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}"/>
         </Grid>
     </materialDesign:DialogHost>
 </metro:MetroWindow>
