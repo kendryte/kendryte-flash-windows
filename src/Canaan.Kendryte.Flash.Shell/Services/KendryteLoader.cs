@@ -28,6 +28,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 {
     public enum JobItemType
     {
+        DetectBoard,
         BootToISPMode,
         Greeting,
         InstallFlashBootloader,
@@ -64,6 +65,13 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         }
     }
 
+    public enum Board
+    {
+        KD233,
+        Generic,
+        Unknown
+    }
+
     public class KendryteLoader : IDisposable
     {
         private static readonly byte[] _greeting = new byte[]
@@ -78,6 +86,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
         private readonly SerialPort _port;
         private readonly int _baudRate;
+        private Board _board;
 
         public Dictionary<JobItemType, JobItemStatus> JobItemsStatus { get; }
 
@@ -118,12 +127,41 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             CurrentJob = JobItemType.BootToISPMode;
             await DoJob(status, async () =>
             {
-                _port.DtrEnable = true;
-                _port.RtsEnable = true;
-                await Task.Delay(TimeSpan.FromMilliseconds(50));
-                _port.DtrEnable = false;
-                await Task.Delay(TimeSpan.FromMilliseconds(50));
+                if (_board == Board.KD233)
+                {
+                    await BootToISPModeForBoard1();
+                }
+                else if (_board == Board.Generic)
+                {
+                    await BootToISPModeForBoard2();
+                }
+                else
+                {
+                    throw new NotSupportedException("Unable to enter ISP mode.");
+                }
             });
+        }
+
+        private async Task BootToISPModeForBoard1()
+        {
+            _port.DtrEnable = true;
+            _port.RtsEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+            _port.DtrEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+        }
+
+        private async Task BootToISPModeForBoard2()
+        {
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+            _port.DtrEnable = false;
+            _port.RtsEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+            _port.DtrEnable = true;
+            _port.RtsEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
 
         public async Task Greeting()
@@ -142,6 +180,32 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             });
         }
 
+        public async Task DetectBoard()
+        {
+            foreach (var board in (Board[])Enum.GetValues(typeof(Board)))
+            {
+                if (await DetectBoard(board)) break;
+            }
+        }
+
+        private async Task<bool> DetectBoard(Board board)
+        {
+            _board = board;
+
+            var status = JobItemsStatus[JobItemType.DetectBoard];
+            CurrentJob = JobItemType.DetectBoard;
+            try
+            {
+                await BootToISPMode();
+                await Greeting();
+                return true;
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
+        }
+
         public async Task InstallFlashBootloader(byte[] bootloader)
         {
             var status = JobItemsStatus[JobItemType.InstallFlashBootloader];
@@ -149,7 +213,24 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             {
                 return Task.Run(() =>
                 {
-                    FlashDataFrame(bootloader, 0x80000000, p => Execute.OnUIThread(() => status.Progress = p));
+                    const int dataframeSize = 1024;
+
+                    uint totalWritten = 0;
+                    var buffer = new byte[4 * 4 + dataframeSize];
+                    uint address = 0x80000000;
+
+                    foreach (var chunk in SplitToChunks(bootloader, dataframeSize))
+                    {
+                        SendPacket(buffer, (ushort)ISPResponse.Operation.ISP_MEMORY_WRITE, address, payload: chunk, shouldRetry: () =>
+                        {
+                            var result = ISPResponse.Parse(ReceiveOnReturn());
+                            return !CheckResponse(result.errorCode);
+                        });
+
+                        address += (uint)chunk.Count;
+                        totalWritten += (uint)chunk.Count;
+                        Execute.OnUIThread(() => status.Progress = (float)totalWritten / bootloader.Length);
+                    }
                 });
             });
         }
@@ -163,22 +244,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                 return Task.Run(async () =>
                 {
                     var buffer = new byte[4 * 4];
-                    using (var stream = new MemoryStream(buffer))
-                    using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-                    {
-                        bw.Write((ushort)ISPResponse.Operation.ISP_MEMORY_BOOT);
-                        bw.Write((ushort)0x00);
-                        bw.Write((uint)0);  // checksum
-                        bw.Write(0x80000000);
-                        bw.Write(0);
-
-                        bw.Flush();
-                        var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
-                        bw.Seek(4, SeekOrigin.Begin);
-                        bw.Write(checksum);
-                    }
-
-                    Write(buffer);
+                    SendPacket(buffer, (ushort)ISPResponse.Operation.ISP_MEMORY_BOOT, 0x80000000);
                     Execute.OnUIThread(() => status.Progress = 0.5f);
                     await Task.Delay(TimeSpan.FromSeconds(2));
                 });
@@ -195,7 +261,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                 {
                     _port.Write(_flashGreeting, 0, _flashGreeting.Length);
                     var resp = FlashModeResponse.Parse(ReceiveOnReturn());
-                    if (resp.errorCode != FlashModeResponse.ErrorCode.ISP_RET_OK)
+                    if (!CheckResponse(resp.errorCode))
                         throw new InvalidOperationException("Error in flash greeting.");
                 });
             });
@@ -210,23 +276,9 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                 return Task.Run(async () =>
                 {
                     var buffer = new byte[4 * 5];
-                    using (var stream = new MemoryStream(buffer))
-                    using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-                    {
-                        bw.Write((ushort)FlashModeResponse.Operation.ISP_UARTHS_BAUDRATE_SET);
-                        bw.Write((ushort)0x00);
-                        bw.Write((uint)0);  // checksum
-                        bw.Write(0);
-                        bw.Write(4);
-                        bw.Write(_baudRate);
+                    var payload = new ArraySegment<byte>(BitConverter.GetBytes(_baudRate));
+                    SendPacket(buffer, (ushort)FlashModeResponse.Operation.ISP_UARTHS_BAUDRATE_SET, 0, payload: payload);
 
-                        bw.Flush();
-                        var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
-                        bw.Seek(4, SeekOrigin.Begin);
-                        bw.Write(checksum);
-                    }
-
-                    Write(buffer);
                     _port.Close();
                     await Task.Delay(50);
                     _port.BaudRate = _baudRate;
@@ -244,25 +296,13 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                 return Task.Run(() =>
                 {
                     var buffer = new byte[4 * 4];
-                    using (var stream = new MemoryStream(buffer))
-                    using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+                    SendPacket(buffer, (ushort)FlashModeResponse.Operation.FLASHMODE_FLASH_INIT, chip, () =>
                     {
-                        bw.Write((ushort)FlashModeResponse.Operation.FLASHMODE_FLASH_INIT);
-                        bw.Write((ushort)0x00);
-                        bw.Write((uint)0);  // checksum
-                        bw.Write(chip);
-                        bw.Write(0);
-
-                        bw.Flush();
-                        var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
-                        bw.Seek(4, SeekOrigin.Begin);
-                        bw.Write(checksum);
-                    }
-
-                    Write(buffer);
-                    var resp = FlashModeResponse.Parse(ReceiveOnReturn());
-                    if (resp.errorCode != FlashModeResponse.ErrorCode.ISP_RET_OK)
-                        throw new InvalidOperationException("Error in flash initializing.");
+                        var resp = FlashModeResponse.Parse(ReceiveOnReturn());
+                        if (!CheckResponse(resp.errorCode))
+                            throw new InvalidOperationException("Error in flash initializing.");
+                        return false;
+                    });
                 });
             });
         }
@@ -293,44 +333,21 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
                     const int dataframeSize = 4096;
 
-                    var rest = dataPack.AsEnumerable();
                     uint address = 0;
                     uint totalWritten = 0;
+                    var buffer = new byte[4 * 4 + dataframeSize];
 
-                    while (true)
+                    foreach (var chunk in SplitToChunks(dataPack, dataframeSize))
                     {
-                        var chunk = rest.Take(dataframeSize).ToArray();
-                        rest = rest.Skip(dataframeSize);
-                        if (!chunk.Any()) break;
-
-                        var buffer = new byte[4 * 4 + chunk.Length];
-                        using (var stream = new MemoryStream(buffer))
-                        using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+                        SendPacket(buffer, (ushort)FlashModeResponse.Operation.ISP_FLASH_WRITE, address, payload: chunk, shouldRetry: () =>
                         {
-                            bw.Write((ushort)FlashModeResponse.Operation.ISP_FLASH_WRITE);
-                            bw.Write((ushort)0x00);
-                            bw.Write((uint)0);  // checksum
-                            bw.Write(address);
-                            bw.Write((uint)chunk.Length);
-                            bw.Write(chunk);
-
-                            bw.Flush();
-                            var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
-                            bw.Seek(4, SeekOrigin.Begin);
-                            bw.Write(checksum);
-                        }
-
-                        while (true)
-                        {
-                            Write(buffer);
                             var result = FlashModeResponse.Parse(ReceiveOnReturn());
-                            if (result.errorCode == FlashModeResponse.ErrorCode.ISP_RET_OK)
-                                break;
-                        }
+                            return !CheckResponse(result.errorCode);
+                        });
 
                         address += dataframeSize;
-                        totalWritten += (uint)chunk.Length;
-                        Execute.OnUIThread(() => status.Progress = (float)totalWritten / data.Length);
+                        totalWritten += (uint)chunk.Count;
+                        Execute.OnUIThread(() => status.Progress = (float)totalWritten / dataPack.Length);
                     }
                 });
             });
@@ -342,11 +359,40 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             CurrentJob = JobItemType.Reboot;
             await DoJob(status, async () =>
             {
-                _port.RtsEnable = false;
-                _port.DtrEnable = true;
-                await Task.Delay(TimeSpan.FromMilliseconds(50));
-                _port.DtrEnable = false;
+                await DoJob(status, async () =>
+                {
+                    if (_board == Board.KD233)
+                    {
+                        await RebootForBoard1();
+                    }
+                    else if (_board == Board.Generic)
+                    {
+                        await RebootForBoard2();
+                    }
+                });
             });
+        }
+
+        public async Task RebootForBoard1()
+        {
+            _port.RtsEnable = false;
+            _port.DtrEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+            _port.DtrEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+        }
+
+        public async Task RebootForBoard2()
+        {
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+            _port.DtrEnable = false;
+            _port.RtsEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+            _port.DtrEnable = false;
+            _port.RtsEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
 
         private async Task DoJob(JobItemStatus status, Func<Task> job)
@@ -368,47 +414,48 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             }
         }
 
-        private void FlashDataFrame(byte[] data, uint address, Action<float> progressHandler)
+        private bool CheckResponse(ISPResponse.ErrorCode errorCode)
         {
-            const int dataframeSize = 1024;
+            return errorCode == ISPResponse.ErrorCode.ISP_RET_OK || errorCode == ISPResponse.ErrorCode.ISP_RET_DEFAULT;
+        }
 
-            var rest = data.AsEnumerable();
-            uint totalWritten = 0;
+        private bool CheckResponse(FlashModeResponse.ErrorCode errorCode)
+        {
+            return errorCode == FlashModeResponse.ErrorCode.ISP_RET_OK || errorCode == FlashModeResponse.ErrorCode.ISP_RET_DEFAULT;
+        }
+
+        private void SendPacket(byte[] buffer, ushort operation, uint address, Func<bool> shouldRetry = null, ArraySegment<byte>? payload = null)
+        {
+            int toWrite = 4 * 4;
+            using (var stream = new MemoryStream(buffer))
+            using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+            {
+                bw.Write(operation);
+                bw.Write((ushort)0x00);
+                bw.Write((uint)0);  // checksum
+                bw.Write(address);
+
+                if (payload is ArraySegment<byte> realPayload)
+                {
+                    bw.Write((uint)realPayload.Count);
+                    bw.Write(realPayload.Array, realPayload.Offset, realPayload.Count);
+                    toWrite += realPayload.Count;
+                }
+                else
+                {
+                    bw.Write(0U);
+                }
+
+                bw.Flush();
+                var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, toWrite - 4 * 2);
+                bw.Seek(4, SeekOrigin.Begin);
+                bw.Write(checksum);
+            }
 
             while (true)
             {
-                var chunk = rest.Take(dataframeSize).ToArray();
-                rest = rest.Skip(dataframeSize);
-                if (!chunk.Any()) break;
-
-                var buffer = new byte[4 * 4 + chunk.Length];
-                using (var stream = new MemoryStream(buffer))
-                using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-                {
-                    bw.Write((ushort)ISPResponse.Operation.ISP_MEMORY_WRITE);
-                    bw.Write((ushort)0x00);
-                    bw.Write((uint)0);  // checksum
-                    bw.Write(address);
-                    bw.Write((uint)chunk.Length);
-                    bw.Write(chunk);
-
-                    bw.Flush();
-                    var checksum = Crc32Algorithm.Compute(buffer, 4 * 2, buffer.Length - 4 * 2);
-                    bw.Seek(4, SeekOrigin.Begin);
-                    bw.Write(checksum);
-                }
-
-                while (true)
-                {
-                    Write(buffer);
-                    var result = ISPResponse.Parse(ReceiveOnReturn());
-                    if (result.errorCode == ISPResponse.ErrorCode.ISP_RET_OK)
-                        break;
-                }
-
-                address += (uint)chunk.Length;
-                totalWritten += (uint)chunk.Length;
-                progressHandler((float)totalWritten / data.Length);
+                Write(new ReadOnlyMemory<byte>(buffer, 0, toWrite));
+                if (shouldRetry == null || !shouldRetry()) break;
             }
         }
 
@@ -447,13 +494,14 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             }
         }
 
-        private void Write(byte[] data)
+        private void Write(ReadOnlyMemory<byte> data)
         {
             IEnumerable<byte> EscapeData()
             {
                 yield return 0xc0;
-                foreach (var b in data)
+                for (int i = 0; i < data.Length; i++)
                 {
+                    var b = data.Span[i];
                     if (b == 0xdb)
                     {
                         yield return 0xdb;
@@ -475,6 +523,19 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
             var buffer = EscapeData().ToArray();
             _port.Write(buffer, 0, buffer.Length);
+        }
+
+        private IEnumerable<ArraySegment<byte>> SplitToChunks(byte[] data, int chunkSize)
+        {
+            int start = 0;
+            while (true)
+            {
+                var count = Math.Min(data.Length - start, chunkSize);
+                if (count == 0)
+                    yield break;
+                yield return new ArraySegment<byte>(data, start, count);
+                start += count;
+            }
         }
 
         #region IDisposable Support

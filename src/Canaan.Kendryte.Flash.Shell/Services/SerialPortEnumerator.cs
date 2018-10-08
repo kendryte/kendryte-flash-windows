@@ -23,10 +23,40 @@ using Caliburn.Micro;
 
 namespace Canaan.Kendryte.Flash.Shell.Services
 {
-    public class SerialDevice
+    public class SerialDevice : IEquatable<SerialDevice>
     {
         public string Name { get; set; }
         public string Port { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SerialDevice);
+        }
+
+        public bool Equals(SerialDevice other)
+        {
+            return other != null &&
+                   Name == other.Name &&
+                   Port == other.Port;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 48670396;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Port);
+            return hashCode;
+        }
+
+        public static bool operator ==(SerialDevice device1, SerialDevice device2)
+        {
+            return EqualityComparer<SerialDevice>.Default.Equals(device1, device2);
+        }
+
+        public static bool operator !=(SerialDevice device1, SerialDevice device2)
+        {
+            return !(device1 == device2);
+        }
     }
 
     public class SerialPortEnumerator : IDisposable
@@ -37,6 +67,8 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         private ManagementEventWatcher _removalWatcher;
 
         public BindableCollection<SerialDevice> Devices { get; } = new BindableCollection<SerialDevice>();
+
+        public event EventHandler DevicesUpdated;
 
         public SerialPortEnumerator()
         {
@@ -110,6 +142,8 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                     });
                 }
             }
+
+            DevicesUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         private bool _disposedValue = false;
