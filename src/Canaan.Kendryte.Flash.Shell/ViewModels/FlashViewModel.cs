@@ -42,7 +42,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
         {
             115200,
-            1500000
+            2000000
         };
 
         private JobItemType? _currentJob;
@@ -73,11 +73,18 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             set => Set(ref _baudRate, value);
         }
 
+        private string _oldDevice;
+
         private string _device;
         public string Device
         {
             get => _device;
-            set => Set(ref _device, value);
+            set
+            {
+                Set(ref _device, value);
+                if (!string.IsNullOrEmpty(value))
+                    _oldDevice = value;
+            }
         }
 
         private string _firmware;
@@ -116,6 +123,10 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             License = Resources.LICENSE;
 
             Device = Devices.FirstOrDefault()?.Port;
+            _serialPortEnumerator.DevicesUpdated += (s, e) =>
+              {
+                  Device = Devices.FirstOrDefault(o => o.Port == _oldDevice)?.Port;
+              };
         }
 
         public async void StartFlash()
@@ -124,6 +135,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 throw new InvalidOperationException("Must specify firmware path.");
             if (string.IsNullOrEmpty(Device))
                 throw new InvalidOperationException("Must select device.");
+            if (BaudRate < 110)
+                throw new InvalidOperationException("Invalid baud rate.");
 
             try
             {
@@ -138,8 +151,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                           CurrentJobStatus = loader.JobItemsStatus[loader.CurrentJob];
                       };
 
-                    await loader.BootToISPMode();
-                    await loader.Greeting();
+                    await loader.DetectBoard();
                     await loader.InstallFlashBootloader(Resources.ISP_PROG);
                     await loader.BootBootloader();
                     await loader.FlashGreeting();
