@@ -307,7 +307,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             });
         }
 
-        public async Task FlashFirmware(byte[] data)
+        public async Task FlashFirmware(uint address, byte[] data)
         {
             var status = JobItemsStatus[JobItemType.FlashFirmware];
             CurrentJob = JobItemType.FlashFirmware;
@@ -332,8 +332,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                     }
 
                     const int dataframeSize = 4096;
-
-                    uint address = 0;
+                    
                     uint totalWritten = 0;
                     var buffer = new byte[4 * 4 + dataframeSize];
 
