@@ -165,7 +165,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                         using (var file = File.OpenRead(Firmware))
                         using (var br = new BinaryReader(file))
                         {
-                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length));
+                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true);
                         }
                     }
                     else if (firmwareType == FirmwareType.FlashList)
@@ -178,7 +178,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                             {
                                 using (var br = new BinaryReader(item.Bin))
                                 {
-                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length));
+                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix);
                                 }
                             }
                         }

@@ -32,10 +32,13 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
         public long Length => _bin.Length;
 
-        public FlashFile(uint address, ZipArchiveEntry bin)
+        public bool SHA256Prefix { get; }
+
+        public FlashFile(uint address, ZipArchiveEntry bin, bool sha256Prefix)
         {
             Address = address;
             _bin = bin;
+            SHA256Prefix = sha256Prefix;
         }
     }
 
@@ -56,7 +59,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             _flashList = await LoadFlashListAsync();
 
             Files = (from f in _flashList.Files
-                     select new FlashFile(f.Address, _pkgArchive.GetEntry(f.Bin))).ToList();
+                     select new FlashFile(f.Address, _pkgArchive.GetEntry(f.Bin), f.SHA256Prefix)).ToList();
         }
 
         private async Task<FlashListRoot> LoadFlashListAsync()
@@ -76,6 +79,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         {
             public uint Address { get; set; }
             public string Bin { get; set; }
+            public bool SHA256Prefix { get; set; }
         }
 
         #region IDisposable Support
