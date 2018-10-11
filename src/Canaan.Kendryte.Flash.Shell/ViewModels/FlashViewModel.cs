@@ -133,6 +133,9 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         {
             if (string.IsNullOrEmpty(Firmware))
                 throw new InvalidOperationException("Must specify firmware path.");
+            var firmwareType = GetFirmwareType(Firmware);
+            if (firmwareType == FirmwareType.Unknown)
+                throw new InvalidOperationException("Unknown firmware type.");
             if (string.IsNullOrEmpty(Device))
                 throw new InvalidOperationException("Must select device.");
             if (BaudRate < 110)
@@ -141,7 +144,6 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             try
             {
                 IsFlashing = true;
-                var firmware = await Task.Run(() => File.ReadAllBytes(Firmware));
 
                 using (var loader = new KendryteLoader(Device, BaudRate))
                 {
@@ -157,7 +159,31 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                     await loader.FlashGreeting();
                     await loader.ChangeBaudRate();
                     await loader.InitializeFlash(Chip);
-                    await loader.FlashFirmware(firmware);
+
+                    if (firmwareType == FirmwareType.Single)
+                    {
+                        using (var file = File.OpenRead(Firmware))
+                        using (var br = new BinaryReader(file))
+                        {
+                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true);
+                        }
+                    }
+                    else if (firmwareType == FirmwareType.FlashList)
+                    {
+                        using (var pkg = new FlashPackage(File.OpenRead(Firmware)))
+                        {
+                            await pkg.LoadAsync();
+
+                            foreach (var item in pkg.Files)
+                            {
+                                using (var br = new BinaryReader(item.Bin))
+                                {
+                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix);
+                                }
+                            }
+                        }
+                    }
+
                     await loader.Reboot();
                 }
 
@@ -172,12 +198,27 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             }
         }
 
+        private FirmwareType GetFirmwareType(string firmware)
+        {
+            var ext = Path.GetExtension(firmware).ToLowerInvariant();
+
+            switch (ext)
+            {
+                case ".bin":
+                    return FirmwareType.Single;
+                case ".kfpkg":
+                    return FirmwareType.FlashList;
+                default:
+                    return FirmwareType.Unknown;
+            }
+        }
+
         public void BrowseFirmware()
         {
             var dialog = new VistaOpenFileDialog
             {
                 Title = "Open firmware",
-                Filter = "Firmware (*.bin)|*.bin",
+                Filter = "Firmware (*.bin;*.kfpkg)|*.bin;*.kfpkg",
                 CheckFileExists = true,
                 Multiselect = false
             };
@@ -186,6 +227,13 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             {
                 Firmware = dialog.FileName;
             }
+        }
+
+        private enum FirmwareType
+        {
+            Single,
+            FlashList,
+            Unknown
         }
     }
 }

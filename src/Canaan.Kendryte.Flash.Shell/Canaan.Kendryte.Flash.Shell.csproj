@@ -126,6 +126,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Services\FlashPackage.cs" />
     <Compile Include="Services\FlashModeResponse.cs" />
     <Compile Include="Services\ISPResponse.cs" />
     <Compile Include="Services\KendryteLoader.cs" />

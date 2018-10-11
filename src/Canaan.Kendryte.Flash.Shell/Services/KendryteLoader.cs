@@ -307,7 +307,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             });
         }
 
-        public async Task FlashFirmware(byte[] data)
+        public async Task FlashFirmware(uint address, byte[] data, bool sha256Prefix)
         {
             var status = JobItemsStatus[JobItemType.FlashFirmware];
             CurrentJob = JobItemType.FlashFirmware;
@@ -315,25 +315,32 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             {
                 return Task.Run(() =>
                 {
-                    var dataPack = new byte[1 + 4 + data.Length + 32];
-                    using (var stream = new MemoryStream(dataPack))
-                    using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+                    byte[] dataPack;
+                    if (sha256Prefix)
                     {
-                        bw.Write((byte)0);
-                        bw.Write((uint)data.Length);
-                        bw.Write(data, 0, data.Length);
-
-                        bw.Flush();
-                        using (var sha256 = SHA256.Create())
+                        dataPack = new byte[1 + 4 + data.Length + 32];
+                        using (var stream = new MemoryStream(dataPack))
+                        using (var bw = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
                         {
-                            var digest = sha256.ComputeHash(dataPack, 0, 1 + 4 + data.Length);
-                            bw.Write(digest);
+                            bw.Write((byte)0);
+                            bw.Write((uint)data.Length);
+                            bw.Write(data, 0, data.Length);
+
+                            bw.Flush();
+                            using (var sha256 = SHA256.Create())
+                            {
+                                var digest = sha256.ComputeHash(dataPack, 0, 1 + 4 + data.Length);
+                                bw.Write(digest);
+                            }
                         }
+                    }
+                    else
+                    {
+                        dataPack = data;
                     }
 
                     const int dataframeSize = 4096;
 
-                    uint address = 0;
                     uint totalWritten = 0;
                     var buffer = new byte[4 * 4 + dataframeSize];
 
