@@ -9,7 +9,7 @@
     <Description>Kendryte flash utility</Description>
     <Copyright>Copyright 2018 Canaan Inc.</Copyright>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>K-Flash</AssemblyName>
+    <AssemblyName>k-flash</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
