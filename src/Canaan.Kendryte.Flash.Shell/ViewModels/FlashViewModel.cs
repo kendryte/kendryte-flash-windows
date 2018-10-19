@@ -154,7 +154,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                       };
 
                     await loader.DetectBoard();
-                    await loader.InstallFlashBootloader(Resources.ISP_PROG);
+                    await loader.InstallFlashBootloader();
                     await loader.BootBootloader();
                     await loader.FlashGreeting();
                     await loader.ChangeBaudRate();

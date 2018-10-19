@@ -13,3 +13,4 @@ CMakeSettings.json
 bin
 obj
 packages/
+*.user

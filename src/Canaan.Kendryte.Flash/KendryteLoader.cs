@@ -14,17 +14,19 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Caliburn.Micro;
+using Canaan.Kendryte.Flash.Properties;
 using Force.Crc32;
 
-namespace Canaan.Kendryte.Flash.Shell.Services
+namespace Canaan.Kendryte.Flash
 {
     public enum JobItemType
     {
@@ -47,8 +49,10 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         Error
     }
 
-    public class JobItemStatus : PropertyChangedBase
+    public class JobItemStatus : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private JobItemRunningStatus _runningStatus;
 
         public JobItemRunningStatus RunningStatus
@@ -58,10 +62,23 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         }
 
         private float _progress;
+
         public float Progress
         {
             get => _progress;
             set => Set(ref _progress, value);
+        }
+
+        private bool Set<T>(ref T property, T value, [CallerMemberName]string propertyName = null)
+        {
+            if (!EqualityComparer<T>.Default.Equals(property, value))
+            {
+                property = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                return true;
+            }
+
+            return false;
         }
     }
 
@@ -87,6 +104,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         private readonly SerialPort _port;
         private readonly int _baudRate;
         private Board _board;
+        private readonly SynchronizationContext _synchronizationContext;
 
         public Dictionary<JobItemType, JobItemStatus> JobItemsStatus { get; }
 
@@ -106,6 +124,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
         public KendryteLoader(string device, int baudRate)
         {
             _baudRate = baudRate;
+            _synchronizationContext = SynchronizationContext.Current;
             JobItemsStatus = (from e in (JobItemType[])Enum.GetValues(typeof(JobItemType))
                               select new
                               {
@@ -206,13 +225,14 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             }
         }
 
-        public async Task InstallFlashBootloader(byte[] bootloader)
+        public async Task InstallFlashBootloader()
         {
             var status = JobItemsStatus[JobItemType.InstallFlashBootloader];
             await DoJob(status, () =>
             {
-                return Task.Run(() =>
+                return Task.Run(async () =>
                 {
+                    var bootloader = Resource.ISP_PROG;
                     const int dataframeSize = 1024;
 
                     uint totalWritten = 0;
@@ -229,7 +249,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
                         address += (uint)chunk.Count;
                         totalWritten += (uint)chunk.Count;
-                        Execute.OnUIThread(() => status.Progress = (float)totalWritten / bootloader.Length);
+                        await ExecuteOnUIAsync(() => status.Progress = (float)totalWritten / bootloader.Length);
                     }
                 });
             });
@@ -245,7 +265,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                 {
                     var buffer = new byte[4 * 4];
                     SendPacket(buffer, (ushort)ISPResponse.Operation.ISP_MEMORY_BOOT, 0x80000000);
-                    Execute.OnUIThread(() => status.Progress = 0.5f);
+                    await ExecuteOnUIAsync(() => status.Progress = 0.5f);
                     await Task.Delay(TimeSpan.FromSeconds(2));
                 });
             });
@@ -313,7 +333,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
             CurrentJob = JobItemType.FlashFirmware;
             await DoJob(status, () =>
             {
-                return Task.Run(() =>
+                return Task.Run(async () =>
                 {
                     byte[] dataPack;
                     if (sha256Prefix)
@@ -354,7 +374,7 @@ namespace Canaan.Kendryte.Flash.Shell.Services
 
                         address += dataframeSize;
                         totalWritten += (uint)chunk.Count;
-                        Execute.OnUIThread(() => status.Progress = (float)totalWritten / dataPack.Length);
+                        await ExecuteOnUIAsync(() => status.Progress = (float)totalWritten / dataPack.Length);
                     }
                 });
             });
@@ -542,6 +562,32 @@ namespace Canaan.Kendryte.Flash.Shell.Services
                     yield break;
                 yield return new ArraySegment<byte>(data, start, count);
                 start += count;
+            }
+        }
+
+        private Task ExecuteOnUIAsync(Action action)
+        {
+            if (_synchronizationContext != null)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                _synchronizationContext.Send(o =>
+                {
+                    try
+                    {
+                        action();
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                }, null);
+                return tcs.Task;
+            }
+            else
+            {
+                action();
+                return Task.CompletedTask;
             }
         }
 

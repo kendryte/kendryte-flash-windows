@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Canaan.Kendryte.Flash.Shell.Services
+namespace Canaan.Kendryte.Flash
 {
     public class FlashFile
     {

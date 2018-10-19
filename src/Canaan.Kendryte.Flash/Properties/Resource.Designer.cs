@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Canaan.Kendryte.Flash.Shell.Properties {
+namespace Canaan.Kendryte.Flash.Properties {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace Canaan.Kendryte.Flash.Shell.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    internal class Resource {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal Resource() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Canaan.Kendryte.Flash.Shell.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Canaan.Kendryte.Flash.Shell.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Canaan.Kendryte.Flash.Properties.Resource", typeof(Resource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,22 +61,12 @@ namespace Canaan.Kendryte.Flash.Shell.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Copyright 2018 Canaan Inc.
-        ///
-        ///Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
-        ///you may not use this file except in compliance with the License.
-        ///You may obtain a copy of the License at
-        ///
-        ///    http://www.apache.org/licenses/LICENSE-2.0
-        ///
-        ///Unless required by applicable law or agreed to in writing, software
-        ///distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
-        ///WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        ///See the License for the specific language govern [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static string LICENSE {
+        internal static byte[] ISP_PROG {
             get {
-                return ResourceManager.GetString("LICENSE", resourceCulture);
+                object obj = ResourceManager.GetObject("ISP_PROG", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

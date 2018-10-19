@@ -18,19 +18,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Canaan.Kendryte.Flash.Shell.Services
+namespace Canaan.Kendryte.Flash
 {
-    public class FlashModeResponse
+    public class ISPResponse
     {
         public enum Operation
         {
-            ISP_DEBUG_INFO = 0xD1,
-            ISP_NOP = 0xD2,
-            ISP_FLASH_ERASE = 0xD3,
-            ISP_FLASH_WRITE = 0xD4,
-            ISP_REBOOT = 0xD5,
-            ISP_UARTHS_BAUDRATE_SET = 0xD6,
-            FLASHMODE_FLASH_INIT = 0xD7
+            ISP_ECHO = 0xC1,
+            ISP_NOP = 0xC2,
+            ISP_MEMORY_WRITE = 0xC3,
+            ISP_MEMORY_READ = 0xC4,
+            ISP_MEMORY_BOOT = 0xC5,
+            ISP_DEBUG_INFO = 0xD1
         }
 
         public enum ErrorCode
