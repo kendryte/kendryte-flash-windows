@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Canaan.Kendryte.Flash", "Canaan.Kendryte.Flash\Canaan.Kendryte.Flash.csproj", "{FAE7F0A7-6630-4440-AC23-691A92BE5B77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Canaan.Kendryte.Flash.Shell", "Canaan.Kendryte.Flash.Shell\Canaan.Kendryte.Flash.Shell.csproj", "{F7419577-0D3F-412E-814A-7C8F690CF133}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Canaan.Kendryte.Flash.Cli", "Canaan.Kendryte.Flash.Cli\Canaan.Kendryte.Flash.Cli.csproj", "{C65C81CE-22E5-4579-9135-FA529BB72F92}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FAE7F0A7-6630-4440-AC23-691A92BE5B77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAE7F0A7-6630-4440-AC23-691A92BE5B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAE7F0A7-6630-4440-AC23-691A92BE5B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAE7F0A7-6630-4440-AC23-691A92BE5B77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7419577-0D3F-412E-814A-7C8F690CF133}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7419577-0D3F-412E-814A-7C8F690CF133}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7419577-0D3F-412E-814A-7C8F690CF133}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7419577-0D3F-412E-814A-7C8F690CF133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C65C81CE-22E5-4579-9135-FA529BB72F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C65C81CE-22E5-4579-9135-FA529BB72F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C65C81CE-22E5-4579-9135-FA529BB72F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C65C81CE-22E5-4579-9135-FA529BB72F92}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {49E5B8D4-DD23-4E7E-B81F-7E846F3EDA86}
+	EndGlobalSection
+EndGlobal
