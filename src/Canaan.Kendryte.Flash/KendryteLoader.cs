@@ -178,8 +178,8 @@ namespace Canaan.Kendryte.Flash
             _port.DtrEnable = false;
             _port.RtsEnable = true;
             await Task.Delay(TimeSpan.FromMilliseconds(10));
-            _port.DtrEnable = true;
             _port.RtsEnable = false;
+            _port.DtrEnable = true;
             await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
 
