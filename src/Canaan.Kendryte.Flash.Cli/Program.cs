@@ -33,7 +33,20 @@ namespace Canaan.Kendryte.Flash.Cli
                         .AddSingleton<FlashService>()
                         .AddSingleton<ProgressIndicator>()
                         .AddSingleton(options)
+                        .AddLogging(c =>
+                        {
+                            c.AddConsole();
+                        })
                         .BuildServiceProvider();
+
+                    AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                    {
+                        if (e.ExceptionObject is Exception ex)
+                            Console.WriteLine("Fatal: " + ex.Message);
+                        else
+                            Console.WriteLine("Fatal: Unexpected error occurred.");
+                        Environment.Exit(-1);
+                    };
 
                     flashService = serviceProvider.GetRequiredService<FlashService>();
                 });
