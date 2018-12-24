@@ -340,6 +340,7 @@ namespace Canaan.Kendryte.Flash
             {
                 return Task.Run(async () =>
                 {
+                    data = ZeroPadding(data, 64);
                     byte[] dataPack;
                     if (sha256Prefix)
                     {
@@ -383,6 +384,21 @@ namespace Canaan.Kendryte.Flash
                     }
                 });
             });
+        }
+
+        private static byte[] ZeroPadding(byte[] data, int align)
+        {
+            var toPad = (int)Math.Ceiling(data.Length / (double)align) * align - data.Length;
+            if (toPad == 0)
+            {
+                return data;
+            }
+            else
+            {
+                var newData = new byte[data.Length + toPad];
+                Array.Copy(data, newData, data.Length);
+                return newData;
+            }
         }
 
         public async Task Reboot()

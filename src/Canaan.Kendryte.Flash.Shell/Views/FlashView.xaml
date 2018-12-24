@@ -71,7 +71,7 @@
                     Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
                     <Button.CommandParameter>
                         <StackPanel Margin="16">
-                            <TextBlock><Run Text="K-Flash V0.3.1"/><LineBreak/><LineBreak/><Run Text="Copyright 2018 Canaan Inc."/><Run Text=" "/><Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="https://kendryte.com"/></Hyperlink><LineBreak/><Run Text="Note: Baud rate and chip selection will be available in next release."/></TextBlock>
+                            <TextBlock><Run Text="K-Flash V0.3.2"/><LineBreak/><LineBreak/><Run Text="Copyright 2018 Canaan Inc."/><Run Text=" "/><Hyperlink NavigateUri="https://kendryte.com" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="https://kendryte.com"/></Hyperlink><LineBreak/><Run Text="Note: Baud rate and chip selection will be available in next release."/></TextBlock>
                             <TextBlock Margin="0 5 0 0"><Run Text="License:"/></TextBlock>
                             <TextBox IsReadOnly="True" VerticalScrollBarVisibility="Visible"
                                      HorizontalScrollBarVisibility="Auto"
