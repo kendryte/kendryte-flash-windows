@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RuntimeIdentifiers>win-x86;linux-64</RuntimeIdentifiers>
     <AssemblyTitle>K-Flash</AssemblyTitle>
-    <Version>0.3.0.0</Version>
+    <Version>0.3.1.0</Version>
     <Product>K-Flash</Product>
     <Description>Kendryte flash utility</Description>
     <Copyright>Copyright 2018 Canaan Inc.</Copyright>
@@ -16,7 +17,6 @@
     <PackageReference Include="CommandLineParser" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
-    <PackageReference Include="ShellProgressBar" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
