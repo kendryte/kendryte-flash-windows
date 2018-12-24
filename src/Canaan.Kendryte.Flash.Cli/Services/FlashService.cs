@@ -49,6 +49,7 @@ namespace Canaan.Kendryte.Flash.Cli.Services
                     _progressIndicator.SetJobItem(loader.CurrentJob, loader.JobItemsStatus[loader.CurrentJob]);
                 };
 
+                Console.WriteLine("Flashing...");
                 await loader.DetectBoard();
                 await loader.InstallFlashBootloader();
                 await loader.BootBootloader();
@@ -83,7 +84,7 @@ namespace Canaan.Kendryte.Flash.Cli.Services
                 await loader.Reboot();
             }
 
-            Console.WriteLine("Flash completed!");
+            Console.WriteLine(Environment.NewLine + "Flash completed!");
         }
 
         private FirmwareType GetFirmwareType(string firmware)

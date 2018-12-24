@@ -2,23 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using ShellProgressBar;
+using AaronLuna.ConsoleProgressBar;
 
 namespace Canaan.Kendryte.Flash.Cli.Services
 {
     internal class ProgressIndicator
     {
-        private readonly ProgressBar _progressBar;
+        private readonly ConsoleProgressBar _progressBar;
         private JobItemStatus _jobItem;
 
         public ProgressIndicator()
         {
-            if (!Console.IsInputRedirected && !Console.IsOutputRedirected)
-            {
-                _progressBar = new ProgressBar(100, "Flash", new ProgressBarOptions
-                {
-                });
-            }
+            _progressBar = new ConsoleProgressBar();
         }
 
         public void SetJobItem(JobItemType itemType, JobItemStatus jobItem)
@@ -28,7 +23,7 @@ namespace Canaan.Kendryte.Flash.Cli.Services
 
             _jobItem = jobItem;
             jobItem.PropertyChanged += JobItem_PropertyChanged;
-            _progressBar?.Tick(itemType.ToString());
+            _progressBar.UpdateText(itemType.ToString());
         }
 
         private void JobItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -36,7 +31,7 @@ namespace Canaan.Kendryte.Flash.Cli.Services
             switch (e.PropertyName)
             {
                 case nameof(JobItemStatus.Progress):
-                    _progressBar?.Tick((int)(_jobItem.Progress * 100));
+                    _progressBar.Report(_jobItem.Progress);
                     break;
                 default:
                     break;

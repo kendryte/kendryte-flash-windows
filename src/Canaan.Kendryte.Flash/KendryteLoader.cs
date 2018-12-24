@@ -23,7 +23,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Canaan.Kendryte.Flash.Properties;
 using Force.Crc32;
 
 namespace Canaan.Kendryte.Flash
@@ -232,7 +231,13 @@ namespace Canaan.Kendryte.Flash
             {
                 return Task.Run(async () =>
                 {
-                    var bootloader = Resource.ISP_PROG;
+                    byte[] bootloader;
+                    using (var bootloaderStream = typeof(KendryteLoader).Assembly.GetManifestResourceStream("Canaan.Kendryte.Flash.Resources.isp_flash.bin"))
+                    {
+                        bootloader = new byte[bootloaderStream.Length];
+                        bootloaderStream.Read(bootloader, 0, bootloader.Length);
+                    }
+
                     const int dataframeSize = 1024;
 
                     uint totalWritten = 0;
