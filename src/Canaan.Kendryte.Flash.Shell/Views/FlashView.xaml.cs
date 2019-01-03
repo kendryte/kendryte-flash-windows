@@ -27,6 +27,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Canaan.Kendryte.Flash.Shell.ViewModels;
 
 namespace Canaan.Kendryte.Flash.Shell.Views
 {
@@ -44,6 +45,22 @@ namespace Canaan.Kendryte.Flash.Shell.Views
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
             e.Handled = true;
+        }
+
+        private void _terminal_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void _terminal_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.ImeProcessed)
+                e.Handled = true;
+        }
+
+        private void _terminal_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((FlashViewModel)DataContext).TerminalDocument = _terminal.Document;
         }
     }
 }

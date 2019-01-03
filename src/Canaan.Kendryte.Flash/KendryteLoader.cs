@@ -120,6 +120,8 @@ namespace Canaan.Kendryte.Flash
 
         public event EventHandler CurrentJobChanged;
 
+        public Action<Stream> ConnectionEstablished { get; set; }
+
         public KendryteLoader(string device, int baudRate)
         {
             _baudRate = baudRate;
@@ -417,6 +419,9 @@ namespace Canaan.Kendryte.Flash
                     {
                         await RebootForBoard2();
                     }
+
+                    _port.BaudRate = 115200;
+                    ConnectionEstablished?.Invoke(_port.BaseStream);
                 });
             });
         }
@@ -427,7 +432,6 @@ namespace Canaan.Kendryte.Flash
             _port.DtrEnable = true;
             await Task.Delay(TimeSpan.FromMilliseconds(50));
             _port.DtrEnable = false;
-            await Task.Delay(TimeSpan.FromMilliseconds(50));
         }
 
         public async Task RebootForBoard2()
@@ -440,7 +444,6 @@ namespace Canaan.Kendryte.Flash
             await Task.Delay(TimeSpan.FromMilliseconds(10));
             _port.DtrEnable = false;
             _port.RtsEnable = false;
-            await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
 
         private async Task DoJob(JobItemStatus status, Func<Task> job)
