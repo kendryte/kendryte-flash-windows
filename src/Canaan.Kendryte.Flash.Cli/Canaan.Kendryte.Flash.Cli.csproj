@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RuntimeIdentifiers>win-x86;linux-64</RuntimeIdentifiers>
     <AssemblyTitle>K-Flash</AssemblyTitle>
-    <Version>0.3.2.0</Version>
+    <Version>0.3.3.0</Version>
     <Product>K-Flash</Product>
     <Description>Kendryte flash utility</Description>
     <Copyright>Copyright 2018 Canaan Inc.</Copyright>

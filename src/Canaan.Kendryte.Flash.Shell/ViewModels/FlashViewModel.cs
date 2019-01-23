@@ -24,6 +24,7 @@ using System.Windows;
 using Caliburn.Micro;
 using Canaan.Kendryte.Flash.Shell.Properties;
 using Canaan.Kendryte.Flash.Shell.Services;
+using ICSharpCode.AvalonEdit.Document;
 using Ookii.Dialogs.Wpf;
 
 namespace Canaan.Kendryte.Flash.Shell.ViewModels
@@ -116,6 +117,11 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             set => Set(ref _license, value);
         }
 
+        public TextDocument TerminalDocument { get; set; }
+
+        private KendryteLoader _kendryteLoader;
+        private Terminal _terminal;
+
         public FlashViewModel()
         {
             Chip = Chips.First().Value;
@@ -145,7 +151,10 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             {
                 IsFlashing = true;
 
-                using (var loader = new KendryteLoader(Device, BaudRate))
+                var loader = new KendryteLoader(Device, BaudRate);
+                //loader.ConnectionEstablished = s => _terminal = new AppTerminal(s, TerminalDocument);
+
+                _kendryteLoader = loader;
                 {
                     loader.CurrentJobChanged += (s, e) =>
                       {
@@ -165,7 +174,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                         using (var file = File.OpenRead(Firmware))
                         using (var br = new BinaryReader(file))
                         {
-                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true);
+                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true, false);
                         }
                     }
                     else if (firmwareType == FirmwareType.FlashList)
@@ -178,7 +187,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                             {
                                 using (var br = new BinaryReader(item.Bin))
                                 {
-                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix);
+                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
                                 }
                             }
                         }
@@ -190,6 +199,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 IsFlashing = false;
                 CurrentJob = null;
                 CurrentJobStatus = null;
+                _terminal?.Dispose();
+                _kendryteLoader?.Dispose();
                 MessageBox.Show("Flash completed!", "K-Flash", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally
@@ -234,6 +245,22 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             Single,
             FlashList,
             Unknown
+        }
+
+        class AppTerminal : Terminal
+        {
+            private readonly TextDocument _textDocument;
+
+            public AppTerminal(Stream stream, TextDocument textDocument)
+                : base(stream)
+            {
+                _textDocument = textDocument ?? throw new ArgumentNullException(nameof(textDocument));
+            }
+
+            protected override void OnDecoded(ReadOnlySpan<char> decoded)
+            {
+                _textDocument.Text += decoded.ToString();
+            }
         }
     }
 }

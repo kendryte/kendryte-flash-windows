@@ -120,6 +120,8 @@ namespace Canaan.Kendryte.Flash
 
         public event EventHandler CurrentJobChanged;
 
+        public Action<Stream> ConnectionEstablished { get; set; }
+
         public KendryteLoader(string device, int baudRate)
         {
             _baudRate = baudRate;
@@ -332,7 +334,7 @@ namespace Canaan.Kendryte.Flash
             });
         }
 
-        public async Task FlashFirmware(uint address, byte[] data, bool sha256Prefix)
+        public async Task FlashFirmware(uint address, byte[] data, bool sha256Prefix, bool reverse4Bytes)
         {
             var status = JobItemsStatus[JobItemType.FlashFirmware];
             CurrentJob = JobItemType.FlashFirmware;
@@ -341,6 +343,8 @@ namespace Canaan.Kendryte.Flash
                 return Task.Run(async () =>
                 {
                     data = ZeroPadding(data, 64);
+                    if (reverse4Bytes)
+                        Reverse4Bytes(data);
                     byte[] dataPack;
                     if (sha256Prefix)
                     {
@@ -401,6 +405,17 @@ namespace Canaan.Kendryte.Flash
             }
         }
 
+        private static void Reverse4Bytes(byte[] data)
+        {
+            if (data.Length % 4 != 0)
+                throw new InvalidDataException("Data must be 4 bytes aligned.");
+            for (int i = 0; i < data.Length; i += 4)
+            {
+                var span = new Span<byte>(data, i, 4);
+                span.Reverse();
+            }
+        }
+
         public async Task Reboot()
         {
             var status = JobItemsStatus[JobItemType.Reboot];
@@ -417,6 +432,9 @@ namespace Canaan.Kendryte.Flash
                     {
                         await RebootForBoard2();
                     }
+
+                    _port.BaudRate = 115200;
+                    ConnectionEstablished?.Invoke(_port.BaseStream);
                 });
             });
         }
@@ -427,7 +445,6 @@ namespace Canaan.Kendryte.Flash
             _port.DtrEnable = true;
             await Task.Delay(TimeSpan.FromMilliseconds(50));
             _port.DtrEnable = false;
-            await Task.Delay(TimeSpan.FromMilliseconds(50));
         }
 
         public async Task RebootForBoard2()
@@ -440,7 +457,6 @@ namespace Canaan.Kendryte.Flash
             await Task.Delay(TimeSpan.FromMilliseconds(10));
             _port.DtrEnable = false;
             _port.RtsEnable = false;
-            await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
 
         private async Task DoJob(JobItemStatus status, Func<Task> job)
