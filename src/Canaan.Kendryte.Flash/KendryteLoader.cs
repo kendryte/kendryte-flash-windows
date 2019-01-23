@@ -334,7 +334,7 @@ namespace Canaan.Kendryte.Flash
             });
         }
 
-        public async Task FlashFirmware(uint address, byte[] data, bool sha256Prefix)
+        public async Task FlashFirmware(uint address, byte[] data, bool sha256Prefix, bool reverse4Bytes)
         {
             var status = JobItemsStatus[JobItemType.FlashFirmware];
             CurrentJob = JobItemType.FlashFirmware;
@@ -343,6 +343,8 @@ namespace Canaan.Kendryte.Flash
                 return Task.Run(async () =>
                 {
                     data = ZeroPadding(data, 64);
+                    if (reverse4Bytes)
+                        Reverse4Bytes(data);
                     byte[] dataPack;
                     if (sha256Prefix)
                     {
@@ -400,6 +402,17 @@ namespace Canaan.Kendryte.Flash
                 var newData = new byte[data.Length + toPad];
                 Array.Copy(data, newData, data.Length);
                 return newData;
+            }
+        }
+
+        private static void Reverse4Bytes(byte[] data)
+        {
+            if (data.Length % 4 != 0)
+                throw new InvalidDataException("Data must be 4 bytes aligned.");
+            for (int i = 0; i < data.Length; i += 4)
+            {
+                var span = new Span<byte>(data, i, 4);
+                span.Reverse();
             }
         }
 

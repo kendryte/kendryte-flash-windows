@@ -151,10 +151,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             {
                 IsFlashing = true;
 
-                _terminal?.Dispose();
-                _kendryteLoader?.Dispose();
                 var loader = new KendryteLoader(Device, BaudRate);
-                loader.ConnectionEstablished = s => _terminal = new AppTerminal(s, TerminalDocument);
+                //loader.ConnectionEstablished = s => _terminal = new AppTerminal(s, TerminalDocument);
 
                 _kendryteLoader = loader;
                 {
@@ -176,7 +174,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                         using (var file = File.OpenRead(Firmware))
                         using (var br = new BinaryReader(file))
                         {
-                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true);
+                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true, false);
                         }
                     }
                     else if (firmwareType == FirmwareType.FlashList)
@@ -189,7 +187,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                             {
                                 using (var br = new BinaryReader(item.Bin))
                                 {
-                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix);
+                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
                                 }
                             }
                         }
@@ -201,6 +199,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 IsFlashing = false;
                 CurrentJob = null;
                 CurrentJobStatus = null;
+                _terminal?.Dispose();
+                _kendryteLoader?.Dispose();
                 MessageBox.Show("Flash completed!", "K-Flash", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally

@@ -34,16 +34,25 @@ namespace Canaan.Kendryte.Flash
 
         public bool SHA256Prefix { get; }
 
-        public FlashFile(uint address, ZipArchiveEntry bin, bool sha256Prefix)
+        public bool Reverse4Bytes { get; }
+
+        public FlashFile(uint address, ZipArchiveEntry bin, bool sha256Prefix, bool reverse4Bytes)
         {
             Address = address;
             _bin = bin;
             SHA256Prefix = sha256Prefix;
+            Reverse4Bytes = reverse4Bytes;
         }
     }
 
     public class FlashPackage : IDisposable
     {
+        private static readonly string[] _supportedVersions =
+        {
+            "0.1.0",
+            "0.1.1"
+        };
+
         private readonly ZipArchive _pkgArchive;
         private FlashListRoot _flashList;
 
@@ -58,8 +67,11 @@ namespace Canaan.Kendryte.Flash
         {
             _flashList = await LoadFlashListAsync();
 
+            if (!_supportedVersions.Contains(_flashList.Version))
+                throw new NotSupportedException("This version of kfkpg is not supported.");
+
             Files = (from f in _flashList.Files
-                     select new FlashFile(f.Address, _pkgArchive.GetEntry(f.Bin), f.SHA256Prefix)).ToList();
+                     select new FlashFile(f.Address, _pkgArchive.GetEntry(f.Bin), f.SHA256Prefix, f.Reverse4Bytes)).ToList();
         }
 
         private async Task<FlashListRoot> LoadFlashListAsync()
@@ -72,6 +84,7 @@ namespace Canaan.Kendryte.Flash
 
         private class FlashListRoot
         {
+            public string Version { get; set; }
             public FlashListFile[] Files { get; set; }
         }
 
@@ -80,6 +93,7 @@ namespace Canaan.Kendryte.Flash
             public uint Address { get; set; }
             public string Bin { get; set; }
             public bool SHA256Prefix { get; set; }
+            public bool Reverse4Bytes { get; set; }
         }
 
         #region IDisposable Support
