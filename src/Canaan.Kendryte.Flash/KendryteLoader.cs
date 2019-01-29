@@ -226,18 +226,21 @@ namespace Canaan.Kendryte.Flash
             }
         }
 
-        public async Task InstallFlashBootloader()
+        public async Task InstallFlashBootloader(byte[] bootloader = null)
         {
             var status = JobItemsStatus[JobItemType.InstallFlashBootloader];
+            CurrentJob = JobItemType.InstallFlashBootloader;
             await DoJob(status, () =>
             {
                 return Task.Run(async () =>
                 {
-                    byte[] bootloader;
-                    using (var bootloaderStream = typeof(KendryteLoader).Assembly.GetManifestResourceStream("Canaan.Kendryte.Flash.Resources.isp_flash.bin"))
+                    if (bootloader == null)
                     {
-                        bootloader = new byte[bootloaderStream.Length];
-                        bootloaderStream.Read(bootloader, 0, bootloader.Length);
+                        using (var bootloaderStream = typeof(KendryteLoader).Assembly.GetManifestResourceStream("Canaan.Kendryte.Flash.Resources.isp_flash.bin"))
+                        {
+                            bootloader = new byte[bootloaderStream.Length];
+                            bootloaderStream.Read(bootloader, 0, bootloader.Length);
+                        }
                     }
 
                     const int dataframeSize = 1024;
@@ -432,9 +435,6 @@ namespace Canaan.Kendryte.Flash
                     {
                         await RebootForBoard2();
                     }
-
-                    _port.BaudRate = 115200;
-                    ConnectionEstablished?.Invoke(_port.BaseStream);
                 });
             });
         }

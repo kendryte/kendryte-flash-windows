@@ -24,20 +24,21 @@ using System.Windows;
 using Caliburn.Micro;
 using Canaan.Kendryte.Flash.Shell.Properties;
 using Canaan.Kendryte.Flash.Shell.Services;
-using ICSharpCode.AvalonEdit.Document;
 using Ookii.Dialogs.Wpf;
 
 namespace Canaan.Kendryte.Flash.Shell.ViewModels
 {
-    public class FlashViewModel : PropertyChangedBase
+    public class FlashViewModel : Screen
     {
         private SerialPortEnumerator _serialPortEnumerator = new SerialPortEnumerator();
+        private TerminalService _terminalService = new TerminalService();
 
         public BindableCollection<SerialDevice> Devices => _serialPortEnumerator.Devices;
 
         public Dictionary<string, uint> Chips { get; } = new Dictionary<string, uint>
         {
-            { "In-Chip", 1 }
+            { "In-Chip", 1 },
+            { "In-Memory", 3 }
         };
 
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
@@ -117,10 +118,12 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             set => Set(ref _license, value);
         }
 
-        public TextDocument TerminalDocument { get; set; }
-
-        private KendryteLoader _kendryteLoader;
-        private Terminal _terminal;
+        private bool _openTerminal = true;
+        public bool OpenTerminal
+        {
+            get => _openTerminal;
+            set => Set(ref _openTerminal, value);
+        }
 
         public FlashViewModel()
         {
@@ -146,15 +149,15 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                 throw new InvalidOperationException("Must select device.");
             if (BaudRate < 110)
                 throw new InvalidOperationException("Invalid baud rate.");
+            if (Chip == 3 && firmwareType == FirmwareType.FlashList)
+                throw new InvalidOperationException("In memory mode only supports bin firmware.");
 
             try
             {
                 IsFlashing = true;
 
-                var loader = new KendryteLoader(Device, BaudRate);
-                //loader.ConnectionEstablished = s => _terminal = new AppTerminal(s, TerminalDocument);
-
-                _kendryteLoader = loader;
+                _terminalService.Stop();
+                using (var loader = new KendryteLoader(Device, BaudRate))
                 {
                     loader.CurrentJobChanged += (s, e) =>
                       {
@@ -163,50 +166,71 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                       };
 
                     await loader.DetectBoard();
-                    await loader.InstallFlashBootloader();
-                    await loader.BootBootloader();
-                    await loader.FlashGreeting();
-                    await loader.ChangeBaudRate();
-                    await loader.InitializeFlash(Chip);
-
-                    if (firmwareType == FirmwareType.Single)
+                    if (Chip == 3)
                     {
                         using (var file = File.OpenRead(Firmware))
                         using (var br = new BinaryReader(file))
                         {
-                            await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true, false);
+                            await loader.InstallFlashBootloader(br.ReadBytes((int)file.Length));
                         }
                     }
-                    else if (firmwareType == FirmwareType.FlashList)
+                    else
                     {
-                        using (var pkg = new FlashPackage(File.OpenRead(Firmware)))
-                        {
-                            await pkg.LoadAsync();
+                        await loader.InstallFlashBootloader();
+                        await loader.BootBootloader();
+                        await loader.FlashGreeting();
+                        await loader.ChangeBaudRate();
+                        await loader.InitializeFlash(Chip);
 
-                            foreach (var item in pkg.Files)
+                        if (firmwareType == FirmwareType.Single)
+                        {
+                            using (var file = File.OpenRead(Firmware))
+                            using (var br = new BinaryReader(file))
                             {
-                                using (var br = new BinaryReader(item.Bin))
+                                await loader.FlashFirmware(0, br.ReadBytes((int)file.Length), true, false);
+                            }
+                        }
+                        else if (firmwareType == FirmwareType.FlashList)
+                        {
+                            using (var pkg = new FlashPackage(File.OpenRead(Firmware)))
+                            {
+                                await pkg.LoadAsync();
+
+                                foreach (var item in pkg.Files)
                                 {
-                                    await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
+                                    using (var br = new BinaryReader(item.Bin))
+                                    {
+                                        await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
+                                    }
                                 }
                             }
                         }
+
+                        if (!OpenTerminal)
+                            await loader.Reboot();
                     }
 
-                    await loader.Reboot();
+                    IsFlashing = false;
+                    CurrentJob = null;
+                    CurrentJobStatus = null;
                 }
 
-                IsFlashing = false;
-                CurrentJob = null;
-                CurrentJobStatus = null;
-                _terminal?.Dispose();
-                _kendryteLoader?.Dispose();
-                MessageBox.Show("Flash completed!", "K-Flash", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (OpenTerminal)
+                    _terminalService.Start(Device, 115200, Chip);
+                else
+                    MessageBox.Show("Flash completed!", "K-Flash", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally
             {
                 IsFlashing = false;
             }
+        }
+
+        protected override void OnDeactivate(bool close)
+        {
+            _serialPortEnumerator?.Dispose();
+
+            base.OnDeactivate(close);
         }
 
         private FirmwareType GetFirmwareType(string firmware)
@@ -245,22 +269,6 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             Single,
             FlashList,
             Unknown
-        }
-
-        class AppTerminal : Terminal
-        {
-            private readonly TextDocument _textDocument;
-
-            public AppTerminal(Stream stream, TextDocument textDocument)
-                : base(stream)
-            {
-                _textDocument = textDocument ?? throw new ArgumentNullException(nameof(textDocument));
-            }
-
-            protected override void OnDecoded(ReadOnlySpan<char> decoded)
-            {
-                _textDocument.Text += decoded.ToString();
-            }
         }
     }
 }
