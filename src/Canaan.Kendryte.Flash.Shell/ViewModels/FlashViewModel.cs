@@ -38,7 +38,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public Dictionary<string, uint> Chips { get; } = new Dictionary<string, uint>
         {
             { "In-Chip", 1 },
-            { "In-Memory", 3 }
+            { "In-Memory", 3 },
+            { "On-Board", 0 }
         };
 
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
@@ -200,7 +201,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                                 {
                                     using (var br = new BinaryReader(item.Bin))
                                     {
-                                        await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
+                                        await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes, item.KModelXip);
                                     }
                                 }
                             }
