@@ -44,6 +44,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
         {
             115200,
+            921600,
+            1500000,
             2000000
         };
 
@@ -241,6 +243,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             {
                 case ".bin":
                     return FirmwareType.Single;
+                case ".zip":
                 case ".kfpkg":
                     return FirmwareType.FlashList;
                 default:
@@ -253,7 +256,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             var dialog = new VistaOpenFileDialog
             {
                 Title = "Open firmware",
-                Filter = "Firmware (*.bin;*.kfpkg)|*.bin;*.kfpkg",
+                Filter = "Firmware (*.bin;*.kfpkg;*.zip)|*.bin;*.kfpkg;*.zip",
                 CheckFileExists = true,
                 Multiselect = false
             };

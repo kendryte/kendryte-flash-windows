@@ -83,9 +83,9 @@ namespace Canaan.Kendryte.Flash
 
     public enum Board
     {
+        MAIXGO,     /* first check MaixGo*/
         KD233,
         Generic,
-        MAIXGO,
         Unknown
     }
 
@@ -199,6 +199,7 @@ namespace Canaan.Kendryte.Flash
             await Task.Delay(TimeSpan.FromMilliseconds(50));
         }
 
+        //FIXME 如果板子没有回复，则会一直等待。
         public async Task Greeting()
         {
             var status = JobItemsStatus[JobItemType.Greeting];
