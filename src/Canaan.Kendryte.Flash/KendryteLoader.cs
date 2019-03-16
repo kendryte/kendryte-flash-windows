@@ -85,6 +85,7 @@ namespace Canaan.Kendryte.Flash
     {
         KD233,
         Generic,
+        MAIXGO,
         Unknown
     }
 
@@ -155,6 +156,10 @@ namespace Canaan.Kendryte.Flash
                 {
                     await BootToISPModeForBoard2();
                 }
+                else if (_board == Board.MAIXGO)
+                {
+                    await BootToISPModeForBoardMaixGoOpenec();
+                }
                 else
                 {
                     throw new NotSupportedException("Unable to enter ISP mode.");
@@ -182,6 +187,16 @@ namespace Canaan.Kendryte.Flash
             _port.RtsEnable = false;
             _port.DtrEnable = true;
             await Task.Delay(TimeSpan.FromMilliseconds(10));
+        }
+
+        private async Task BootToISPModeForBoardMaixGoOpenec()
+        {
+            _port.DtrEnable = true;
+            _port.RtsEnable = false;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+            _port.DtrEnable = false;
+            _port.RtsEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
         }
 
         public async Task Greeting()
@@ -435,6 +450,10 @@ namespace Canaan.Kendryte.Flash
                     {
                         await RebootForBoard2();
                     }
+                    else if (_board == Board.MAIXGO)
+                    {
+                        await RebootForBoardMaixGoOpenec();
+                    }
                 });
             });
         }
@@ -457,6 +476,18 @@ namespace Canaan.Kendryte.Flash
             await Task.Delay(TimeSpan.FromMilliseconds(10));
             _port.DtrEnable = false;
             _port.RtsEnable = false;
+        }
+
+        public async Task RebootForBoardMaixGoOpenec()
+        {
+            _port.RtsEnable = false;
+            _port.DtrEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+            _port.RtsEnable = true;
+            _port.DtrEnable = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+            _port.RtsEnable = true;
+            _port.DtrEnable = true;
         }
 
         private async Task DoJob(JobItemStatus status, Func<Task> job)
