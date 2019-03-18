@@ -45,6 +45,8 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
         {
             115200,
+            921600,
+            1500000,
             2000000
         };
 
