@@ -256,7 +256,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             var dialog = new VistaOpenFileDialog
             {
                 Title = "Open firmware",
-                Filter = "Firmware (*.bin;*.kfpkg;*.zip)|*.bin;*.kfpkg;*.zip",
+                Filter = "Firmware (*.bin;*.kfpkg)|*.bin;*.kfpkg",
                 CheckFileExists = true,
                 Multiselect = false
             };
