@@ -38,12 +38,17 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         public Dictionary<string, uint> Chips { get; } = new Dictionary<string, uint>
         {
             { "In-Chip", 1 },
-            { "In-Memory", 3 }
+            { "In-Memory", 3 },
+#if DEBUG
+            { "On-Board", 0 }
+#endif
         };
 
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
         {
             115200,
+            921600,
+            1500000,
             2000000
         };
 

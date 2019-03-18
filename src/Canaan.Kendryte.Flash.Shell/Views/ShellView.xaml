@@ -8,7 +8,7 @@
                    WindowStartupLocation="CenterScreen"
                    EnableDWMDropShadow="True"
                    ResizeMode="CanResize"
-                   Title="K-Flash V0.4.0" SizeToContent="WidthAndHeight">
+                   Title="K-Flash V0.4.1" SizeToContent="WidthAndHeight">
     <materialDesign:DialogHost>
         <Grid>
             <ContentControl Grid.Row="1" cal:View.Model="{Binding Content}"/>
