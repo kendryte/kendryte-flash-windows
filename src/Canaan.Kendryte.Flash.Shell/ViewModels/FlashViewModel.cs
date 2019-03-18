@@ -39,7 +39,9 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
         {
             { "In-Chip", 1 },
             { "In-Memory", 3 },
+#if DEBUG
             { "On-Board", 0 }
+#endif
         };
 
         public IReadOnlyList<int> BaudRates { get; } = new List<int>
@@ -203,7 +205,7 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
                                 {
                                     using (var br = new BinaryReader(item.Bin))
                                     {
-                                        await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes, item.KModelXip);
+                                        await loader.FlashFirmware(item.Address, br.ReadBytes((int)item.Length), item.SHA256Prefix, item.Reverse4Bytes);
                                     }
                                 }
                             }

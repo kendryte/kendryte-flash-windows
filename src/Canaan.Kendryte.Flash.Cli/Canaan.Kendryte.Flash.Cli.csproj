@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RuntimeIdentifiers>win-x86;linux-64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x86;linux-x64</RuntimeIdentifiers>
     <AssemblyTitle>K-Flash</AssemblyTitle>
     <Version>0.3.3.0</Version>
     <Product>K-Flash</Product>
