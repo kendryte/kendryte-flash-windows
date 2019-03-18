@@ -243,7 +243,6 @@ namespace Canaan.Kendryte.Flash.Shell.ViewModels
             {
                 case ".bin":
                     return FirmwareType.Single;
-                case ".zip":
                 case ".kfpkg":
                     return FirmwareType.FlashList;
                 default:
