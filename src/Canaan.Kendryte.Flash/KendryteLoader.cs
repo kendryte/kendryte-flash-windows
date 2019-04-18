@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -122,6 +123,11 @@ namespace Canaan.Kendryte.Flash
         public event EventHandler CurrentJobChanged;
 
         public Action<Stream> ConnectionEstablished { get; set; }
+
+#if DEBUG
+        private Stopwatch _sw = new Stopwatch();
+        private TimeSpan _write, _send, _wait, _writepacket;
+#endif
 
         public KendryteLoader(string device, int baudRate)
         {
@@ -388,18 +394,31 @@ namespace Canaan.Kendryte.Flash
                         dataPack = data;
                     }
 
-                    const int dataframeSize = 4096;
+                    const int dataframeSize = 4096 * 16;
 
                     uint totalWritten = 0;
                     var buffer = new byte[4 * 4 + dataframeSize];
 
+#if DEBUG
+                    var sw = new Stopwatch();
+                    sw.Start();
+#endif
+
                     foreach (var chunk in SplitToChunks(dataPack, dataframeSize))
                     {
+#if DEBUG
+                        sw.Restart();
+#endif
                         SendPacket(buffer, (ushort)FlashModeResponse.Operation.ISP_FLASH_WRITE, address, payload: chunk, shouldRetry: () =>
                         {
                             var result = FlashModeResponse.Parse(ReceiveOnReturn());
                             return !CheckResponse(result.errorCode);
                         });
+#if DEBUG
+                        sw.Stop();
+                        _writepacket += sw.Elapsed;
+                        Debug.WriteLine($"Send packet takes {_writepacket}");
+#endif
 
                         address += dataframeSize;
                         totalWritten += (uint)chunk.Count;
@@ -551,7 +570,22 @@ namespace Canaan.Kendryte.Flash
             while (true)
             {
                 Write(new ReadOnlyMemory<byte>(buffer, 0, toWrite));
-                if (shouldRetry == null || !shouldRetry()) break;
+#if DEBUG
+                _sw.Restart();
+#endif
+                if (shouldRetry == null || !shouldRetry())
+                {
+#if DEBUG
+                    _sw.Stop();
+                    _wait += _sw.Elapsed;
+                    Debug.WriteLine($"Wait response takes {_wait}");
+#endif
+                    break;
+                }
+                else
+                {
+                    Debug.Assert(false);
+                }
             }
         }
 
